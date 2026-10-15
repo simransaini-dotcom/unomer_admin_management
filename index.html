@@ -10,16 +10,17 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #f4f5fb;
-      --card: #fff;
-      --text: #1e2347;
-      --muted: #7b819c;
-      --primary: #6d5ef0;
-      --primary-2: #8470f5;
-      --danger: #e11d48;
-      --ok: #16a34a;
-      --border: #e6e8f2;
-      --soft: #f3f5fc;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #1e293b;
+      --muted: #64748b;
+      --primary: #172554;
+      --primary-2: #334155;
+      --danger: #e45b5b;
+      --ok: #059669;
+      --border: #e2e8f0;
+      --soft: #f1f5f9;
+      --shadow: 0 1px 2px rgba(23, 37, 84, .04), 0 4px 18px rgba(23, 37, 84, .06);
     }
 
     * { box-sizing: border-box; }
@@ -30,6 +31,7 @@
       background: var(--bg);
       color: var(--text);
       font-size: 14px;
+      padding-bottom: 120px;
     }
 
     .hidden { display: none !important; }
@@ -47,126 +49,178 @@
 
     i[data-ic] { display: inline-flex; font-style: normal; }
 
-    /* Header */
-    header {
-      background: linear-gradient(100deg, #2d2c8c 0%, #3f43b8 55%, #4a56d6 100%);
-      color: #fff;
-      padding: 0 28px;
-      min-height: 84px;
+    /* Top bar */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: rgba(248, 250, 252, .85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .topbar-in {
+      width: 100%;
+      padding: 12px 78px;
       display: flex;
       align-items: center;
-      gap: 14px;
-      position: relative;
-      overflow: hidden;
+      gap: 12px;
     }
 
     .logo {
-      width: 48px;
-      height: 48px;
-      border-radius: 14px;
-      background: linear-gradient(135deg, #6d5ef0, #4f46e5);
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      color: #fff;
       display: grid;
       place-items: center;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, .25);
+      box-shadow: 0 4px 12px rgba(23, 37, 84, .3);
       flex: 0 0 auto;
     }
 
-    .logo svg.ic { width: 26px; height: 26px; }
-
-    header h1 { margin: 0; font-size: 1.55rem; font-weight: 800; }
-    header p { margin: 3px 0 0; font-size: .82rem; opacity: .9; }
-    .head-text { flex: 1; min-width: 0; }
+    .brand { flex: 1; min-width: 0; }
+    .brand h1 { margin: 0; font-size: 1.05rem; font-weight: 800; letter-spacing: -.01em; }
+    .brand p { margin: 1px 0 0; font-size: .72rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     .date-pill {
       display: flex;
       align-items: center;
-      gap: 10px;
-      background: rgba(255, 255, 255, .14);
-      border-radius: 14px;
-      padding: 10px 18px;
+      gap: 8px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 8px 14px;
       font-weight: 700;
-      font-size: .85rem;
+      font-size: .78rem;
+      color: #475569;
       white-space: nowrap;
-      position: relative;
-      z-index: 1;
     }
+    .date-pill svg.ic { width: 15px; height: 15px; color: var(--primary); }
 
-    .head-art { width: 130px; height: 84px; flex: 0 0 auto; margin-right: -8px; }
+    .auth { display: flex; align-items: center; gap: 8px; }
+    .auth .who {
+      font-size: .76rem;
+      font-weight: 700;
+      background: #fff;
+      border: 1px solid var(--border);
+      color: #475569;
+      padding: 8px 14px;
+      border-radius: 12px;
+      white-space: nowrap;
+      max-width: 220px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .auth button {
+      height: 36px;
+      padding: 0 14px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: .78rem;
+      background: var(--primary);
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      white-space: nowrap;
+    }
+    .auth button svg.ic { width: 15px; height: 15px; }
+    .auth button.ghost { background: #fff; color: var(--text); border: 1px solid var(--border); }
 
-    main { width: 100%; margin: 0; padding: 14px 12px 40px; }
+    /* Layout */
+    main { width: 100%; padding: 24px 78px 0; }
 
-    /* Stat cards */
+    .view { display: none; animation: fade .25s ease; }
+    .view.active { display: block; }
+    @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+    .view-head { display: flex; align-items: flex-end; gap: 14px; margin-bottom: 18px; flex-wrap: wrap; }
+    .view-head .grow { flex: 1; min-width: 200px; }
+    .view-head h2 { margin: 0; font-size: 1.5rem; font-weight: 800; letter-spacing: -.02em; }
+    .view-head p { margin: 4px 0 0; color: var(--muted); font-size: .85rem; }
+
+    /* Stats */
     .stats {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-      gap: 16px;
-      margin-bottom: 18px;
+      grid-template-columns: 1.5fr 1fr 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 22px;
     }
 
     .stat {
-      border-radius: 18px;
-      padding: 18px 22px;
-      box-shadow: 0 2px 10px rgba(60, 70, 130, .07);
-      border: 1px solid rgba(255, 255, 255, .8);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 18px 20px;
+      box-shadow: var(--shadow);
     }
 
-    .stat .top { display: flex; align-items: center; gap: 12px; }
-    .stat .sicon { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; }
-    .stat .slabel { font-weight: 700; font-size: .8rem; }
-    .stat .sval { font-size: 1.9rem; font-weight: 800; margin: 8px 0 4px; color: #111637; }
-    .stat .ssub { font-size: .75rem; color: var(--muted); display: flex; align-items: center; gap: 5px; }
+    .stat .top { display: flex; align-items: center; gap: 10px; }
+    .stat .sicon { width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; }
+    .stat .sicon svg.ic { width: 17px; height: 17px; }
+    .stat .slabel { font-weight: 700; font-size: .78rem; color: var(--muted); }
+    .stat .sval { font-size: 1.7rem; font-weight: 800; margin: 14px 0 4px; letter-spacing: -.02em; }
+    .stat .ssub { font-size: .74rem; color: var(--muted); display: flex; align-items: center; gap: 5px; }
     .stat .ssub svg.ic { width: 13px; height: 13px; }
 
-    .s-blue { background: linear-gradient(135deg, #eef5ff, #f6faff); }
-    .s-blue .sicon { background: #dbeafe; color: #2563eb; }
-    .s-blue .slabel { color: #1e40af; }
-    .s-green { background: linear-gradient(135deg, #ecfbf5, #f4fdf9); }
-    .s-green .sicon { background: #bbf7d9; color: #059669; }
-    .s-green .slabel { color: #047857; }
-    .s-purple { background: linear-gradient(135deg, #f1efff, #f8f7ff); }
-    .s-purple .sicon { background: #ddd6fe; color: #6d28d9; }
-    .s-purple .slabel { color: #6d28d9; }
-    .s-purple.neg .sval { color: var(--danger); }
-    .s-orange { background: linear-gradient(135deg, #fff6ec, #fffaf4); }
-    .s-orange .sicon { background: #fed7aa; color: #ea580c; }
-    .s-orange .slabel { color: #b45309; }
+    .s-blue .sicon { background: #d1fae5; color: #059669; }
+    .s-green .sicon { background: #fde8e8; color: #e45b5b; }
+    .s-orange .sicon { background: #e2e8f0; color: #334155; }
     .ssub.green { color: var(--ok); font-weight: 600; }
-    .ssub.violet { color: #6d28d9; font-weight: 500; }
+
+    .stat.balance {
+      background: linear-gradient(135deg, #172554 0%, #1e3a6e 55%, #334155 100%);
+      border: 0;
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 10px 28px rgba(23, 37, 84, .3);
+    }
+    .stat.balance::after {
+      content: '';
+      position: absolute;
+      right: -40px;
+      top: -40px;
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .07);
+    }
+    .stat.balance .sicon { background: rgba(255, 255, 255, .2); color: #fff; }
+    .stat.balance .slabel { color: rgba(255, 255, 255, .8); }
+    .stat.balance .sval { font-size: 2.2rem; }
+    .stat.balance .ssub { color: rgba(255, 255, 255, .8); }
+    .stat.balance.neg { background: linear-gradient(135deg, #c94444, #e45b5b); box-shadow: 0 10px 28px rgba(228, 91, 91, .3); }
 
     /* Cards */
-    .grid {
-      display: grid;
-      grid-template-columns: minmax(300px, 1fr) minmax(340px, 1.2fr) minmax(430px, 1.5fr);
-      gap: 18px;
-      margin-bottom: 18px;
-      align-items: start;
-    }
-
     .card {
       background: var(--card);
-      border-radius: 18px;
-      padding: 18px 20px 20px;
-      box-shadow: 0 2px 10px rgba(60, 70, 130, .07);
-      border: 1px solid #eef0f8;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
       min-width: 0;
     }
+    .card.flush { padding: 0; overflow: hidden; }
 
     .card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
-    .card-head h2 { margin: 0; font-size: 1rem; font-weight: 800; }
+    .card-head h2, .card-head h3 { margin: 0; font-size: 1rem; font-weight: 800; }
     .card-head p { margin: 2px 0 0; font-size: .75rem; color: var(--muted); }
     .card-head .grow { flex: 1; min-width: 0; }
+    .card.flush > .card-head { padding: 18px 20px 4px; margin-bottom: 8px; }
 
-    .badge { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; color: #fff; flex: 0 0 auto; }
-    .badge.blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
-    .badge.plum { background: linear-gradient(135deg, #c026d3, #7c3aed); }
-    .badge.lavender { background: #e0e7ff; color: #4f46e5; }
-    .badge.violet { background: linear-gradient(135deg, #6d5ef0, #7c3aed); }
-    .badge.teal { background: #ccfbf1; color: #0f766e; }
+    .badge { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; color: #fff; flex: 0 0 auto; }
+    .badge.blue { background: linear-gradient(135deg, #172554, #334155); }
+    .badge.plum { background: linear-gradient(135deg, #e45b5b, #c94444); }
+    .badge.violet { background: linear-gradient(135deg, #172554, #334155); }
 
-    .card.out { background: linear-gradient(180deg, #fbf1fb 0, #fff 120px); }
-    .card.out h2 { color: #9b2c9b; }
+    .card.out { background: linear-gradient(180deg, #fdf0f0 0, #fff 140px); }
+    .card.out h2 { color: #c94444; }
 
-    label { display: block; font-size: .75rem; color: #3b4163; font-weight: 600; margin: 12px 0 6px; }
+    /* Forms */
+    label { display: block; font-size: .75rem; color: #334155; font-weight: 600; margin: 12px 0 6px; }
     label.first { margin-top: 0; }
 
     .field { position: relative; }
@@ -175,18 +229,18 @@
       left: 12px;
       top: 50%;
       transform: translateY(-50%);
-      color: #8b93a7;
+      color: #94a3b8;
       pointer-events: none;
     }
     .field > i svg.ic { width: 16px; height: 16px; }
-    .field .rupee { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #8b93a7; font-weight: 600; pointer-events: none; }
+    .field .rupee { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-weight: 600; pointer-events: none; }
 
     input, select, textarea {
       width: 100%;
       height: 42px;
       padding: 0 12px;
       border: 1px solid var(--border);
-      border-radius: 10px;
+      border-radius: 12px;
       font: inherit;
       font-size: .85rem;
       color: var(--text);
@@ -194,7 +248,7 @@
     }
 
     .field input, .field select { padding-left: 38px; }
-    input[readonly] { background: #f6f7fb; color: #4b5170; font-weight: 600; }
+    input[readonly] { background: #f1f5f9; color: #475569; font-weight: 600; }
     input[type="checkbox"] { width: 16px; height: 16px; padding: 0; accent-color: var(--primary); }
 
     select {
@@ -207,10 +261,10 @@
     }
 
     textarea { height: 76px; padding: 10px 12px; resize: none; display: block; }
-    input::placeholder, textarea::placeholder { color: #a3a9bf; }
+    input::placeholder, textarea::placeholder { color: #94a3b8; }
 
     input:focus, select:focus, textarea:focus {
-      outline: 2px solid rgba(109, 94, 240, .45);
+      outline: 2px solid rgba(23, 37, 84, .35);
       border-color: transparent;
     }
 
@@ -219,37 +273,39 @@
 
     .hint { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: .75rem; margin-top: 12px; }
     .hint svg.ic { width: 14px; height: 14px; color: #94a3b8; }
-    .left-hint { font-size: .78rem; font-weight: 700; color: #9b2c9b; margin-top: 8px; }
+    .left-hint { font-size: .78rem; font-weight: 700; color: #c94444; margin-top: 8px; }
     .left-hint.neg { color: var(--danger); }
     .left-hint:empty { display: none; }
-    .count { text-align: right; font-size: .68rem; color: #a3a9bf; margin-top: -18px; margin-right: 8px; position: relative; pointer-events: none; }
+    .count { text-align: right; font-size: .68rem; color: #94a3b8; margin-top: -18px; margin-right: 8px; position: relative; pointer-events: none; }
 
     label.chk { display: flex; align-items: center; gap: 8px; font-weight: 600; cursor: pointer; }
 
+    /* Buttons */
     button { font: inherit; cursor: pointer; border: 0; }
 
     .btn-main {
       width: 100%;
       margin-top: 16px;
-      height: 44px;
-      border-radius: 10px;
+      height: 46px;
+      border-radius: 12px;
       color: #fff;
       font-weight: 700;
-      font-size: .85rem;
+      font-size: .88rem;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 9px;
       background: linear-gradient(135deg, var(--primary), var(--primary-2));
-      box-shadow: 0 4px 12px rgba(109, 94, 240, .3);
+      box-shadow: 0 6px 16px rgba(23, 37, 84, .3);
     }
-    .btn-main.plum { background: linear-gradient(135deg, #a8479f, #9333a0); box-shadow: 0 4px 12px rgba(147, 51, 160, .25); }
+    .btn-main.plum { background: linear-gradient(135deg, #e45b5b, #d14b4b); box-shadow: 0 6px 16px rgba(228, 91, 91, .3); }
     .btn-main:hover { filter: brightness(1.06); }
+    .btn-main:disabled { opacity: .6; cursor: not-allowed; }
 
     .btn-add {
-      height: 36px;
+      height: 38px;
       padding: 0 16px;
-      border-radius: 10px;
+      border-radius: 12px;
       color: #fff;
       font-weight: 700;
       font-size: .8rem;
@@ -257,30 +313,39 @@
       align-items: center;
       gap: 6px;
       background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      box-shadow: 0 4px 12px rgba(23, 37, 84, .25);
+      white-space: nowrap;
     }
 
     .btn-soft {
-      height: 36px;
+      height: 38px;
       padding: 0 16px;
-      border-radius: 10px;
-      background: #e8edff;
-      color: #4f46e5;
+      border-radius: 12px;
+      background: #fff;
+      border: 1px solid var(--border);
+      color: var(--text);
       font-weight: 700;
       font-size: .8rem;
       display: inline-flex;
       align-items: center;
       gap: 8px;
+      white-space: nowrap;
     }
+    .btn-soft svg.ic { color: var(--primary); }
 
-    .btn-ghost { height: 38px; padding: 0 16px; border-radius: 10px; background: #eef0f6; color: var(--text); font-weight: 700; font-size: .8rem; }
-    .btn-save { height: 38px; padding: 0 18px; border-radius: 10px; color: #fff; font-weight: 700; font-size: .8rem; background: linear-gradient(135deg, var(--primary), var(--primary-2)); }
+    .btn-link { background: none; color: var(--primary); font-weight: 700; font-size: .8rem; padding: 6px 4px; }
+    .btn-ghost { height: 38px; padding: 0 16px; border-radius: 12px; background: #e2e8f0; color: var(--text); font-weight: 700; font-size: .8rem; }
+    .btn-save { height: 38px; padding: 0 18px; border-radius: 12px; color: #fff; font-weight: 700; font-size: .8rem; background: linear-gradient(135deg, var(--primary), var(--primary-2)); }
+
+    .btn-close { width: 34px; height: 34px; border-radius: 10px; background: var(--soft); color: #475569; display: grid; place-items: center; flex: 0 0 auto; }
+    .btn-close:hover { background: #e2e8f0; }
 
     .btn-del {
-      background: #fde9ee;
+      background: #fdecec;
       color: var(--danger);
       font-weight: 600;
       font-size: .72rem;
-      padding: 5px 11px;
+      padding: 6px 11px;
       border-radius: 8px;
       display: inline-flex;
       align-items: center;
@@ -289,55 +354,60 @@
     .btn-del svg.ic { width: 13px; height: 13px; }
 
     .btn-icon {
-      width: 30px;
-      height: 30px;
-      border-radius: 8px;
-      background: #eef1fb;
-      color: #4f46e5;
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: #eef2f9;
+      color: var(--primary);
       display: inline-grid;
       place-items: center;
       margin-right: 4px;
     }
+    .btn-icon:hover { background: #dde5f3; }
     .btn-icon svg.ic { width: 14px; height: 14px; }
-    .btn-icon.danger { background: #fde9ee; color: var(--danger); margin-right: 0; }
+    .btn-icon.danger { background: #fdecec; color: var(--danger); margin-right: 0; }
+    .btn-icon.danger:hover { background: #fadada; }
 
     /* Employees */
     .emp-add { display: flex; gap: 8px; align-items: center; }
-    .emp-add .field { width: 150px; }
-    .emp-add input { height: 36px; font-size: .78rem; padding-left: 34px; }
+    .emp-add .field { width: 220px; }
+    .emp-add input { height: 38px; font-size: .8rem; padding-left: 34px; }
     .emp-add .field > i { left: 10px; }
 
     .avatar {
-      width: 24px;
-      height: 24px;
+      width: 28px;
+      height: 28px;
       border-radius: 50%;
-      background: #e3e7fb;
-      color: #4338ca;
-      font-weight: 700;
-      font-size: .72rem;
+      background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
+      color: #172554;
+      font-weight: 800;
+      font-size: .74rem;
       display: inline-grid;
       place-items: center;
       margin-right: 10px;
       vertical-align: middle;
     }
 
+    /* Tables */
     .scroll { overflow-x: auto; }
 
-    table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: .8rem; }
+    table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: .82rem; }
     thead th {
-      background: #f1f4fc;
-      color: #6b7390;
+      color: #64748b;
       font-weight: 700;
       font-size: .66rem;
-      letter-spacing: .04em;
+      letter-spacing: .06em;
       text-transform: uppercase;
       text-align: left;
-      padding: 10px 14px;
+      padding: 12px 20px;
       white-space: nowrap;
+      background: #f8fafc;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
     }
-    thead th:first-child { border-radius: 10px 0 0 10px; }
-    thead th:last-child { border-radius: 0 10px 10px 0; }
-    td { padding: 9px 14px; border-bottom: 1px solid #eef0f8; vertical-align: middle; }
+    .card.flush thead th { border-top: 0; }
+    td { padding: 13px 20px; border-bottom: 1px solid #eef2f7; vertical-align: middle; }
+    tbody tr:hover td { background: #f8fafc; }
     tbody tr:last-child td { border-bottom: 0; }
     td.pos { color: var(--ok); font-weight: 700; }
     td.neg { color: var(--danger); font-weight: 700; }
@@ -349,250 +419,284 @@
 
     .tag { display: inline-block; padding: 3px 11px; border-radius: 8px; font-size: .72rem; font-weight: 600; white-space: nowrap; }
 
-    tfoot td { background: #f8f9fe; font-weight: 700; border-bottom: 0; padding: 8px 14px; }
-    tfoot td.lbl { text-align: right; color: #6b7390; }
-    tfoot tr:first-child td:first-child { border-radius: 10px 0 0 0; }
-    tfoot tr:last-child td:first-child { border-radius: 0 0 0 10px; }
-    tfoot tr:last-child td:last-child { border-radius: 0 0 10px 0; }
+    tfoot td { background: #f8fafc; font-weight: 700; border-bottom: 0; padding: 10px 20px; border-top: 1px solid #eef2f7; }
+    tfoot tr:first-child td { border-top: 1px solid var(--border); }
+    tfoot td.lbl { text-align: right; color: #64748b; }
 
-    .empty { color: var(--muted); text-align: center; padding: 18px 0; }
+    .empty { color: var(--muted); text-align: center; padding: 36px 0; }
+    tbody tr:hover td.empty { background: transparent; }
 
     /* Category form */
-    .cat-form { background: #f8f9fe; border: 1px solid var(--border); border-radius: 14px; padding: 4px 14px 14px; margin-bottom: 14px; }
-    .cat-form h3 { margin: 12px 0 0; font-size: .85rem; }
-    .cat-actions { display: flex; gap: 8px; margin-top: 14px; }
+    .cat-form { max-width: 560px; margin-bottom: 18px; }
+    .cat-form .card-head { margin-bottom: 0; }
+    .cat-actions { display: flex; gap: 8px; margin-top: 16px; }
 
-    /* History */
-    .toolbar { display: flex; gap: 10px; align-items: center; }
-    .toolbar select { width: 160px; height: 36px; font-size: .8rem; }
+    /* History & feed */
+    .toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .toolbar select { width: 170px; height: 38px; font-size: .8rem; }
 
-    .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 12px; }
-    .chip { padding: 6px 12px; border-radius: 99px; background: var(--soft); font-size: .75rem; font-weight: 600; color: #4b5170; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
+    .chip { padding: 6px 12px; border-radius: 99px; background: #fff; border: 1px solid var(--border); font-size: .75rem; font-weight: 600; color: #475569; }
     .chip b { margin-left: 4px; }
     .chip.in b { color: var(--ok); }
     .chip.out b { color: var(--danger); }
-    .chip.net { background: #e8edff; color: #3730a3; }
+    .chip.net { background: #e2e8f0; border-color: #e2e8f0; color: #172554; }
 
-    #toast {
+    .feed { list-style: none; margin: 0; padding: 0 8px 8px; }
+    .feed li { display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 14px; }
+    .feed li:hover { background: #f8fafc; }
+    .feed .main { flex: 1; min-width: 0; }
+    .feed .who { font-weight: 700; font-size: .85rem; }
+    .feed .meta { display: flex; align-items: center; gap: 8px; margin-top: 3px; font-size: .72rem; color: var(--muted); flex-wrap: wrap; }
+    .feed .amt { font-weight: 800; white-space: nowrap; }
+    .feed .amt.pos { color: var(--ok); }
+    .feed .amt.neg { color: var(--danger); }
+    .feed .avatar { margin: 0; width: 36px; height: 36px; font-size: .85rem; }
+    .feed-empty { color: var(--muted); text-align: center; padding: 36px 0; }
+
+    /* Floating dock navigation */
+    .dock {
       position: fixed;
-      bottom: 20px;
       left: 50%;
+      bottom: 18px;
       transform: translateX(-50%);
-      background: #1e2347;
-      color: #fff;
-      padding: 10px 18px;
-      border-radius: 10px;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity .25s;
-      z-index: 10;
-    }
-    #toast.show { opacity: 1; }
-
-    @media (max-width: 1250px) {
-      .grid { grid-template-columns: 1fr 1fr; }
-      .grid .span-all { grid-column: 1 / -1; }
+      z-index: 8;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 7px;
+      border-radius: 26px;
+      background: rgba(23, 37, 84, .96);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      box-shadow: 0 14px 40px rgba(23, 37, 84, .4);
     }
 
-    @media (max-width: 800px) {
-      .grid { grid-template-columns: 1fr; }
-      .head-art { display: none; }
-    }
-
-    @media (max-width: 640px) {
-      header { padding: 12px 16px; flex-wrap: wrap; }
-      .date-pill { padding: 8px 12px; }
-      .card-head.wrap { flex-wrap: wrap; }
-      .toolbar { flex-wrap: wrap; }
-    }
-
-    /* Roles & authentication */
-    body:not(.is-admin) .admin-only { display: none !important; }
-
-    body:not(.is-admin) .grid { grid-template-columns: minmax(320px, 1fr) minmax(430px, 1.4fr); }
-    body:not(.is-admin) .grid .span-all { grid-column: auto; }
-    @media (max-width: 800px) {
-      body:not(.is-admin) .grid { grid-template-columns: 1fr; }
-    }
-
-    .auth { display: flex; align-items: center; gap: 10px; position: relative; z-index: 1; }
-    .auth .who { font-size: .8rem; font-weight: 700; background: rgba(255, 255, 255, .14); padding: 9px 14px; border-radius: 12px; white-space: nowrap; }
-    .auth button {
-      height: 38px;
+    .dock-item {
+      height: 44px;
       padding: 0 16px;
-      border-radius: 12px;
+      border-radius: 19px;
+      background: transparent;
+      color: rgba(255, 255, 255, .65);
       font-weight: 700;
       font-size: .8rem;
-      background: #fff;
-      color: #3730a3;
       display: inline-flex;
       align-items: center;
       gap: 8px;
+      transition: background .2s, color .2s;
+      white-space: nowrap;
     }
-    .auth button.ghost { background: rgba(255, 255, 255, .18); color: #fff; }
+    .dock-item:hover { color: #fff; background: rgba(255, 255, 255, .08); }
+    .dock-item.active { background: #fff; color: var(--text); }
+    .dock-item.active svg.ic { color: var(--primary); }
 
-    .modal { position: fixed; inset: 0; background: rgba(20, 24, 60, .55); display: grid; place-items: center; z-index: 20; padding: 16px; }
-    .modal-box { background: #fff; border-radius: 18px; padding: 22px; width: 100%; max-width: 380px; box-shadow: 0 20px 50px rgba(0, 0, 0, .3); }
+    .dock-add {
+      width: 52px;
+      height: 52px;
+      margin: -14px 6px;
+      border-radius: 50%;
+      color: #fff;
+      display: grid;
+      place-items: center;
+      color: #172554;
+      background: #fff;
+      box-shadow: 0 8px 20px rgba(23, 37, 84, .45);
+      border: 4px solid var(--bg);
+      transition: transform .15s;
+    }
+    .dock-add:hover { transform: scale(1.06); }
+    .dock-add svg.ic { width: 22px; height: 22px; stroke-width: 2.5; }
+
+    #toast {
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #172554;
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 12px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s;
+      z-index: 30;
+      max-width: calc(100vw - 32px);
+      text-align: center;
+    }
+    #toast.show { opacity: 1; }
+
+    /* Modals */
+    body:not(.is-admin) .admin-only { display: none !important; }
+
+    .modal { position: fixed; inset: 0; background: rgba(15, 23, 42, .55); backdrop-filter: blur(3px); display: grid; place-items: center; z-index: 20; padding: 16px; }
+    .modal-box { background: #fff; border-radius: 20px; padding: 22px; width: 100%; max-width: 380px; box-shadow: 0 20px 50px rgba(0, 0, 0, .3); }
+    .modal .modal-card { width: 100%; max-width: 460px; max-height: calc(100vh - 32px); overflow-y: auto; box-shadow: 0 20px 50px rgba(0, 0, 0, .3); animation: pop .2s ease; }
+    @keyframes pop { from { opacity: 0; transform: translateY(14px) scale(.98); } to { opacity: 1; transform: none; } }
     .login-err { color: var(--danger); font-size: .78rem; font-weight: 600; margin-top: 10px; min-height: 1em; }
-    .banner { background: #fff1f2; color: #9f1239; border: 1px solid #fecdd3; border-radius: 12px; padding: 10px 14px; margin-bottom: 14px; font-weight: 600; font-size: .82rem; }
+    .banner { background: #fff1f2; color: #9f1239; border: 1px solid #fecdd3; border-radius: 14px; padding: 10px 14px; margin-bottom: 16px; font-weight: 600; font-size: .82rem; }
+
+    /* Responsive */
+    @media (max-width: 1100px) {
+      .topbar-in { padding-left: 40px; padding-right: 40px; }
+      main { padding-left: 40px; padding-right: 40px; }
+    }
+
+    @media (max-width: 900px) {
+      .topbar-in { padding-left: 20px; padding-right: 20px; }
+      main { padding-left: 20px; padding-right: 20px; }
+      .stats { grid-template-columns: repeat(3, 1fr); }
+      .stat.balance { grid-column: 1 / -1; }
+      .brand p { display: none; }
+    }
+
+    @media (max-width: 640px) {
+      .topbar-in { padding: 10px 10px !important; }
+      .date-pill { display: none; }
+      .auth .who { max-width: 130px; padding: 8px 10px; }
+      .auth button span.lbl { display: none; }
+      main { padding: 14px 10px 0 !important; }
+      .view-head h2 { font-size: 1.3rem; }
+      .stats { gap: 10px; }
+      .stat { padding: 14px 16px; border-radius: 18px; }
+      .stat .sval { font-size: 1.35rem; margin-top: 10px; }
+      .stat.balance .sval { font-size: 1.9rem; }
+      .card { padding: 16px; }
+      .card.flush { padding: 0; }
+      thead th, td, tfoot td { padding-left: 14px; padding-right: 14px; }
+      .toolbar { width: 100%; }
+      .toolbar select { flex: 1; min-width: 130px; width: auto; }
+      .emp-add { width: 100%; }
+      .emp-add .field { flex: 1; width: auto; }
+
+      .dock { left: 12px; right: 12px; bottom: 12px; transform: none; justify-content: space-around; gap: 0; padding: 6px; border-radius: 24px; }
+      .dock-item { flex-direction: column; gap: 3px; height: 50px; padding: 0 8px; font-size: .62rem; border-radius: 16px; flex: 1; justify-content: center; }
+      .dock-add { width: 50px; height: 50px; margin: -20px 4px 0; flex: 0 0 auto; }
+      #toast { bottom: 92px; }
+
+      .modal.sheet { place-items: end center; padding: 0; }
+      .modal.sheet .modal-card { max-width: none; max-height: 92vh; border-radius: 24px 24px 0 0; }
+    }
+
+    @media (max-width: 560px) {
+      .stats { grid-template-columns: 1fr 1fr; }
+      .stat.s-orange { grid-column: 1 / -1; }
+    }
+
+    @media (max-width: 380px) {
+      .stats { grid-template-columns: 1fr; }
+      .row { flex-direction: column; gap: 0; }
+    }
   </style>
 </head>
 
 <body>
-  <header>
-    <span class="logo"><i data-ic="wallet"></i></span>
-    <div class="head-text">
-      <h1>Team Fund Manager</h1>
-      <p>Manage penalties, contributions and party expenses in one place.</p>
+  <header class="topbar">
+    <div class="topbar-in">
+      <span class="logo"><i data-ic="wallet"></i></span>
+      <div class="brand">
+        <h1>Team Fund Manager</h1>
+        <p>Penalties, contributions and party expenses in one place</p>
+      </div>
+      <div class="date-pill"><i data-ic="calendar"></i><span id="headDate"></span></div>
+      <div class="auth" id="authArea"></div>
     </div>
-    <div class="auth" id="authArea"></div>
-    <div class="date-pill"><i data-ic="calendar"></i><span id="headDate"></span></div>
-    <svg class="head-art" viewBox="0 0 130 84" aria-hidden="true">
-      <ellipse cx="108" cy="30" rx="6" ry="16" fill="#5aa7ff" transform="rotate(-20 108 30)" opacity=".85" />
-      <ellipse cx="120" cy="38" rx="5" ry="14" fill="#7cc0ff" transform="rotate(15 120 38)" opacity=".85" />
-      <ellipse cx="114" cy="52" rx="4" ry="11" fill="#4f8df0" transform="rotate(35 114 52)" opacity=".8" />
-      <circle cx="62" cy="52" r="30" fill="#fbbf24" stroke="#fde68a" stroke-width="3" />
-      <circle cx="62" cy="52" r="23" fill="#fcd34d" stroke="#f59e0b" stroke-width="2" />
-      <text x="62" y="62" text-anchor="middle" font-size="28" font-weight="800" fill="#b45309" font-family="system-ui, sans-serif">₹</text>
-    </svg>
   </header>
 
   <main>
     <div class="banner hidden" id="netBanner"></div>
-    <section class="stats">
-      <div class="stat s-blue">
-        <div class="top"><span class="sicon"><i data-ic="users"></i></span><span class="slabel">Total Collected</span></div>
-        <div class="sval" id="sCollected">₹0</div>
-        <div class="ssub green"><i data-ic="arrowUp"></i><span id="sCollectedSub"></span></div>
+
+    <!-- Overview -->
+    <section class="view active" id="view-overview" data-view="overview">
+      <div class="view-head">
+        <div class="grow">
+          <h2>Overview</h2>
+          <p>Where the team fund stands today.</p>
+        </div>
       </div>
-      <div class="stat s-green">
-        <div class="top"><span class="sicon"><i data-ic="coins"></i></span><span class="slabel">Total Spent</span></div>
-        <div class="sval" id="sSpent">₹0</div>
-        <div class="ssub" id="sSpentSub">No expenses yet</div>
+
+      <div class="stats">
+        <div class="stat balance" id="balBox">
+          <div class="top"><span class="sicon"><i data-ic="wallet"></i></span><span class="slabel">Fund Balance</span></div>
+          <div class="sval" id="sBalance">₹0</div>
+          <div class="ssub"><i data-ic="sparkles"></i>Available for next party</div>
+        </div>
+        <div class="stat s-blue">
+          <div class="top"><span class="sicon"><i data-ic="users"></i></span><span class="slabel">Total Collected</span></div>
+          <div class="sval" id="sCollected">₹0</div>
+          <div class="ssub green"><i data-ic="arrowUp"></i><span id="sCollectedSub"></span></div>
+        </div>
+        <div class="stat s-green">
+          <div class="top"><span class="sicon"><i data-ic="coins"></i></span><span class="slabel">Total Spent</span></div>
+          <div class="sval" id="sSpent">₹0</div>
+          <div class="ssub" id="sSpentSub">No expenses yet</div>
+        </div>
+        <div class="stat s-orange">
+          <div class="top"><span class="sicon"><i data-ic="history"></i></span><span class="slabel">Transactions</span></div>
+          <div class="sval" id="sTxns">0</div>
+          <div class="ssub">Across all employees</div>
+        </div>
       </div>
-      <div class="stat s-purple" id="balBox">
-        <div class="top"><span class="sicon"><i data-ic="wallet"></i></span><span class="slabel">Fund Balance</span></div>
-        <div class="sval" id="sBalance">₹0</div>
-        <div class="ssub violet"><i data-ic="sparkles"></i>Available for next party</div>
-      </div>
-      <div class="stat s-orange">
-        <div class="top"><span class="sicon"><i data-ic="history"></i></span><span class="slabel">Total Transactions</span></div>
-        <div class="sval" id="sTxns">0</div>
-        <div class="ssub">Across all employees</div>
+
+      <div class="card flush">
+        <div class="card-head">
+          <span class="badge violet"><i data-ic="history"></i></span>
+          <div class="grow">
+            <h3>Recent activity</h3>
+            <p>Your latest five transactions</p>
+          </div>
+          <button class="btn-link" type="button" data-go="history">View all</button>
+        </div>
+        <ul class="feed" id="recentList"></ul>
       </div>
     </section>
 
-    <section class="grid">
-      <div class="card admin-only" id="txCard">
-        <div class="card-head">
-          <span class="badge blue" id="txBadge"><i data-ic="plus"></i></span>
-          <div>
-            <h2>New Transaction</h2>
-            <p>Record a penalty, contribution or expense</p>
-          </div>
+    <!-- History -->
+    <section class="view" id="view-history" data-view="history">
+      <div class="view-head" id="historyCard">
+        <div class="grow">
+          <h2>History</h2>
+          <p>All transactions with their records.</p>
         </div>
-        <form id="txForm">
-          <label for="txCat" class="first">Category</label>
-          <div class="field"><i data-ic="tag"></i><select id="txCat" required></select></div>
-          <div class="row">
-            <div>
-              <label for="txEmp" id="txEmpLabel">Employee</label>
-              <div class="field"><i data-ic="user"></i><select id="txEmp" required></select></div>
-            </div>
-            <div>
-              <label for="txAmt">Amount (₹)</label>
-              <div class="field"><span class="rupee">₹</span><input type="number" id="txAmt" min="1" step="1" placeholder="Enter amount" required style="padding-left:30px"></div>
-            </div>
-          </div>
-          <div class="left-hint" id="txLeft"></div>
-          <div class="row">
-            <div>
-              <label for="txDate">Date</label>
-              <div class="field"><i data-ic="calendar"></i><input type="date" id="txDate" required></div>
-            </div>
-            <div id="timeWrap" class="hidden">
-              <label for="txTime">Arrival time</label>
-              <div class="field"><i data-ic="clock"></i><input type="time" id="txTime"></div>
-            </div>
-          </div>
-          <div class="hint hidden" id="txRule"><i data-ic="info"></i><span id="txRuleText"></span></div>
-          <label for="txNote" id="txNoteLabel">Note (optional)</label>
-          <textarea id="txNote" maxlength="200" placeholder="e.g. Wrong answer in product review"></textarea>
-          <div class="count" id="noteCount">0/200</div>
-          <button class="btn-main" id="txSubmit" type="submit"></button>
-        </form>
+        <div class="toolbar">
+          <select id="filterCat"></select>
+          <select id="filterEmp"></select>
+          <button class="btn-soft" id="exportBtn" type="button"><i data-ic="download"></i>Export CSV</button>
+        </div>
       </div>
-
-      <div class="card">
-        <div class="card-head">
-          <span class="badge teal"><i data-ic="tag"></i></span>
-          <div class="grow">
-            <h2>Categories</h2>
-            <p>Penalties, contributions and expenses</p>
-          </div>
-          <button class="btn-add admin-only" id="catAddBtn" type="button"><i data-ic="plus"></i>Add</button>
-        </div>
-
-        <form id="catForm" class="cat-form hidden admin-only">
-          <h3 id="catFormTitle">New category</h3>
-          <label for="catName">Name</label>
-          <input type="text" id="catName" maxlength="40" placeholder="e.g. Dress Code Penalty" required>
-          <div class="row">
-            <div>
-              <label for="catKind">Type</label>
-              <select id="catKind">
-                <option value="in">Collection (money in)</option>
-                <option value="out">Expense (money out)</option>
-              </select>
-            </div>
-            <div>
-              <label for="catMode">Amount</label>
-              <select id="catMode">
-                <option value="variable">Variable</option>
-                <option value="fixed">Fixed</option>
-              </select>
-            </div>
-          </div>
-          <div id="catAmtWrap" class="hidden">
-            <label for="catAmount">Fixed amount (₹)</label>
-            <input type="number" id="catAmount" min="1" step="1" placeholder="e.g. 120">
-          </div>
-          <div id="catTimeWrap" class="hidden">
-            <label class="chk"><input type="checkbox" id="catTimeChk">Ask arrival time and require it after</label>
-            <input type="time" id="catTime" value="09:00">
-          </div>
-          <div class="cat-actions">
-            <button class="btn-save" type="submit">Save</button>
-            <button class="btn-ghost" id="catCancel" type="button">Cancel</button>
-          </div>
-        </form>
-
+      <div class="chips hidden" id="empSummary"></div>
+      <div class="card flush">
         <div class="scroll">
           <table>
             <thead>
               <tr>
+                <th>Date</th>
                 <th>Category</th>
-                <th>Total</th>
+                <th>Employee</th>
+                <th>Details</th>
+                <th>Amount</th>
                 <th class="admin-only">Actions</th>
               </tr>
             </thead>
-            <tbody id="catBody"></tbody>
+            <tbody id="histBody"></tbody>
+            <tfoot id="histFoot"></tfoot>
           </table>
         </div>
       </div>
+    </section>
 
-      <div class="card span-all">
-        <div class="card-head wrap">
-          <span class="badge lavender"><i data-ic="users"></i></span>
-          <div class="grow">
-            <h2>Employees</h2>
-            <p>Balance and statement per employee</p>
-          </div>
-          <form id="empForm" class="emp-add admin-only">
-            <div class="field"><i data-ic="search"></i><input type="text" id="empName" placeholder="New employee name" maxlength="60" required></div>
-            <button class="btn-add" type="submit"><i data-ic="plus"></i>Add</button>
-          </form>
+    <!-- Employees -->
+    <section class="view" id="view-employees" data-view="employees">
+      <div class="view-head">
+        <div class="grow">
+          <h2>Employees</h2>
+          <p>Balance and statement per employee.</p>
         </div>
+        <form id="empForm" class="emp-add admin-only">
+          <div class="field"><i data-ic="user"></i><input type="text" id="empName" placeholder="New employee name" maxlength="60" required></div>
+          <button class="btn-add" type="submit"><i data-ic="plus"></i>Add</button>
+        </form>
+      </div>
+      <div class="card flush">
         <div class="scroll">
           <table>
             <thead>
@@ -610,38 +714,123 @@
       </div>
     </section>
 
-    <section class="card" id="historyCard">
-      <div class="card-head wrap">
-        <span class="badge violet"><i data-ic="history"></i></span>
+    <!-- Categories -->
+    <section class="view" id="view-categories" data-view="categories">
+      <div class="view-head">
         <div class="grow">
-          <h2>History</h2>
-          <p>All transactions with their records</p>
+          <h2>Categories</h2>
+          <p>Penalties, contributions and expenses.</p>
         </div>
-        <div class="toolbar">
-          <select id="filterCat"></select>
-          <select id="filterEmp"></select>
-          <button class="btn-soft" id="exportBtn" type="button"><i data-ic="download"></i>Export CSV</button>
-        </div>
+        <button class="btn-add admin-only" id="catAddBtn" type="button"><i data-ic="plus"></i>Add category</button>
       </div>
-      <div class="chips hidden" id="empSummary"></div>
-      <div class="scroll">
-        <table>
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Category</th>
-              <th>Employee</th>
-              <th>Details</th>
-              <th>Amount</th>
-              <th class="admin-only">Actions</th>
-            </tr>
-          </thead>
-          <tbody id="histBody"></tbody>
-          <tfoot id="histFoot"></tfoot>
-        </table>
+
+      <form id="catForm" class="card cat-form hidden admin-only">
+        <div class="card-head">
+          <span class="badge violet"><i data-ic="tag"></i></span>
+          <div class="grow"><h3 id="catFormTitle">New category</h3></div>
+        </div>
+        <label for="catName">Name</label>
+        <input type="text" id="catName" maxlength="40" placeholder="e.g. Dress Code Penalty" required>
+        <div class="row">
+          <div>
+            <label for="catKind">Type</label>
+            <select id="catKind">
+              <option value="in">Collection (money in)</option>
+              <option value="out">Expense (money out)</option>
+            </select>
+          </div>
+          <div>
+            <label for="catMode">Amount</label>
+            <select id="catMode">
+              <option value="variable">Variable</option>
+              <option value="fixed">Fixed</option>
+            </select>
+          </div>
+        </div>
+        <div id="catAmtWrap" class="hidden">
+          <label for="catAmount">Fixed amount (₹)</label>
+          <input type="number" id="catAmount" min="1" step="1" placeholder="e.g. 120">
+        </div>
+        <div id="catTimeWrap" class="hidden">
+          <label class="chk"><input type="checkbox" id="catTimeChk">Ask arrival time and require it after</label>
+          <input type="time" id="catTime" value="09:00">
+        </div>
+        <div class="cat-actions">
+          <button class="btn-save" type="submit">Save</button>
+          <button class="btn-ghost" id="catCancel" type="button">Cancel</button>
+        </div>
+      </form>
+
+      <div class="card flush">
+        <div class="scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Total</th>
+                <th class="admin-only">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="catBody"></tbody>
+          </table>
+        </div>
       </div>
     </section>
   </main>
+
+  <!-- Floating dock navigation -->
+  <nav class="dock" id="dock" aria-label="Main navigation">
+    <button class="dock-item active" type="button" data-view="overview" aria-label="Overview"><i data-ic="layout"></i><span>Overview</span></button>
+    <button class="dock-item" type="button" data-view="history" aria-label="History"><i data-ic="history"></i><span>History</span></button>
+    <button class="dock-add admin-only" id="txOpen" type="button" aria-label="New transaction" title="New transaction"><i data-ic="plus"></i></button>
+    <button class="dock-item" type="button" data-view="employees" aria-label="Employees"><i data-ic="users"></i><span>Employees</span></button>
+    <button class="dock-item" type="button" data-view="categories" aria-label="Categories"><i data-ic="tag"></i><span>Categories</span></button>
+  </nav>
+
+  <!-- New transaction sheet (admin only) -->
+  <div class="modal sheet hidden admin-only" id="txModal">
+    <div class="card modal-card" id="txCard">
+      <div class="card-head">
+        <span class="badge blue" id="txBadge"><i data-ic="plus"></i></span>
+        <div class="grow">
+          <h2>New Transaction</h2>
+          <p>Record a penalty, contribution or expense</p>
+        </div>
+        <button class="btn-close" id="txClose" type="button" aria-label="Close"><i data-ic="x"></i></button>
+      </div>
+      <form id="txForm">
+        <label for="txCat" class="first">Category</label>
+        <div class="field"><i data-ic="tag"></i><select id="txCat" required></select></div>
+        <div class="row">
+          <div>
+            <label for="txEmp" id="txEmpLabel">Employee</label>
+            <div class="field"><i data-ic="user"></i><select id="txEmp" required></select></div>
+          </div>
+          <div>
+            <label for="txAmt">Amount (₹)</label>
+            <div class="field"><span class="rupee">₹</span><input type="number" id="txAmt" min="1" step="1" placeholder="Enter amount" required style="padding-left:30px"></div>
+          </div>
+        </div>
+        <div class="left-hint" id="txLeft"></div>
+        <div class="row">
+          <div>
+            <label for="txDate">Date</label>
+            <div class="field"><i data-ic="calendar"></i><input type="date" id="txDate" required></div>
+          </div>
+          <div id="timeWrap" class="hidden">
+            <label for="txTime">Arrival time</label>
+            <div class="field"><i data-ic="clock"></i><input type="time" id="txTime"></div>
+          </div>
+        </div>
+        <div class="hint hidden" id="txRule"><i data-ic="info"></i><span id="txRuleText"></span></div>
+        <label for="txNote" id="txNoteLabel">Note (optional)</label>
+        <textarea id="txNote" maxlength="200" placeholder="e.g. Wrong answer in product review"></textarea>
+        <div class="count" id="noteCount">0/200</div>
+        <button class="btn-main" id="txSubmit" type="submit"></button>
+      </form>
+    </div>
+  </div>
+
   <div class="modal hidden" id="loginModal">
     <form class="modal-box" id="loginForm">
       <div class="card-head">
@@ -670,7 +859,7 @@
       var OLD_KEY = 'latePenaltyData.v1';
 
       var PALETTE = [
-        ['#fde9ee', '#e11d48'], ['#fff1de', '#c2410c'], ['#e0f2fe', '#0369a1'], ['#dcfce7', '#15803d'],
+        ['#fdecec', '#e11d48'], ['#fff1de', '#c2410c'], ['#e0f2fe', '#0369a1'], ['#dcfce7', '#15803d'],
         ['#fef9c3', '#a16207'], ['#efe7fd', '#7c3aed'], ['#ccfbf1', '#0f766e'], ['#fae8ff', '#a21caf']
       ];
 
@@ -694,7 +883,9 @@
         edit: '<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
         fileText: '<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>',
         lock: '<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
-        logOut: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>'
+        logOut: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>',
+        layout: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>',
+        x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>'
       };
       function ic(name) {
         return '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">' + ICONS[name] + '</svg>';
@@ -878,11 +1069,11 @@
         var a = $('authArea'); a.innerHTML = '';
         if (role === 'admin') {
           a.appendChild(el('span', 'Admin: ' + adminId, 'who'));
-          var lo = el('button', undefined, 'ghost'); lo.innerHTML = ic('logOut') + 'Logout';
+          var lo = el('button', undefined, 'ghost'); lo.innerHTML = ic('logOut') + '<span class="lbl">Logout</span>';
           lo.onclick = logout; a.appendChild(lo);
         } else {
           a.appendChild(el('span', 'View only', 'who'));
-          var li = el('button'); li.innerHTML = ic('lock') + 'Admin Login';
+          var li = el('button'); li.innerHTML = ic('lock') + '<span class="lbl">Admin Login</span>';
           li.onclick = openLogin; a.appendChild(li);
         }
       }
@@ -1074,7 +1265,51 @@
         renderEmps();
         applyCatUI();
         renderHistory();
+        renderRecent();
       }
+
+      function sortedEntries(list) {
+        return list.sort(function (a, b) { return (b.date + (b.time || '')).localeCompare(a.date + (a.time || '')) || b.created - a.created; });
+      }
+
+      function renderRecent() {
+        var ul = $('recentList'); ul.innerHTML = '';
+        var list = sortedEntries(state.entries.slice()).slice(0, 5);
+        if (!list.length) { ul.appendChild(el('li', 'No transactions yet', 'feed-empty')); return; }
+        list.forEach(function (e) {
+          var li = el('li');
+          li.appendChild(el('span', empName(e.empId).charAt(0).toUpperCase(), 'avatar'));
+          var main = el('div', undefined, 'main');
+          main.appendChild(el('div', empName(e.empId), 'who'));
+          var meta = el('div', undefined, 'meta');
+          meta.appendChild(catTag(e.catId));
+          meta.appendChild(el('span', e.date));
+          main.appendChild(meta);
+          li.appendChild(main);
+          li.appendChild(el('span', (e.kind === 'in' ? '+ ' : '− ') + money(e.amount), 'amt ' + (e.kind === 'in' ? 'pos' : 'neg')));
+          ul.appendChild(li);
+        });
+      }
+
+      /* Navigation */
+      var VIEWS = ['overview', 'history', 'employees', 'categories'];
+      function showView(name) {
+        if (VIEWS.indexOf(name) === -1) name = 'overview';
+        Array.prototype.forEach.call(document.querySelectorAll('.view'), function (v) {
+          v.classList.toggle('active', v.getAttribute('data-view') === name);
+        });
+        Array.prototype.forEach.call(document.querySelectorAll('.dock-item'), function (b) {
+          b.classList.toggle('active', b.getAttribute('data-view') === name);
+        });
+        if (window.history && history.replaceState) history.replaceState(null, '', '#' + name);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      function openTx() {
+        if (role !== 'admin') return;
+        $('txModal').classList.remove('hidden');
+      }
+      function closeTx() { $('txModal').classList.add('hidden'); }
 
       function renderCats() {
         var body = $('catBody'); body.innerHTML = '';
@@ -1126,7 +1361,7 @@
           var sb = el('button', undefined, 'btn-icon'); sb.title = 'View statement'; sb.innerHTML = ic('fileText');
           sb.onclick = function () {
             $('filterEmp').value = e.id; $('filterCat').value = 'all'; renderHistory();
-            $('historyCard').scrollIntoView({ behavior: 'smooth' });
+            showView('history');
           };
           act.appendChild(sb);
           if (role === 'admin') {
@@ -1164,7 +1399,8 @@
 
         var list = state.entries.filter(function (e) {
           return (catF === 'all' || e.catId === catF) && (emp === 'all' || e.empId === emp);
-        }).sort(function (a, b) { return (b.date + (b.time || '')).localeCompare(a.date + (a.time || '')) || b.created - a.created; });
+        });
+        sortedEntries(list);
         var body = $('histBody'); body.innerHTML = '';
         var foot = $('histFoot'); foot.innerHTML = '';
         var paid = 0, spent = 0;
@@ -1320,9 +1556,20 @@
           if (!ok) return;
           $('txTime').value = ''; $('txNote').value = ''; $('noteCount').textContent = '0/200';
           if (!cat.fixed) $('txAmt').value = '';
+          closeTx();
           toast((cat.kind === 'in' ? money(amt) + ' added to ' : money(amt) + ' deducted from ') + (cat.kind === 'in' ? cat.name : 'fund'));
         });
       };
+
+      $('txOpen').onclick = openTx;
+      $('txClose').onclick = closeTx;
+      $('txModal').onclick = function (ev) { if (ev.target === this) closeTx(); };
+      Array.prototype.forEach.call(document.querySelectorAll('.dock-item'), function (b) {
+        b.onclick = function () { showView(b.getAttribute('data-view')); };
+      });
+      Array.prototype.forEach.call(document.querySelectorAll('[data-go]'), function (b) {
+        b.onclick = function () { showView(b.getAttribute('data-go')); };
+      });
 
       $('txCat').onchange = applyCatUI;
       $('txEmp').onchange = renderLeft;
@@ -1368,10 +1615,11 @@
       };
       $('loginCancel').onclick = closeLogin;
       $('loginModal').onclick = function (ev) { if (ev.target === this) closeLogin(); };
-      document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape') closeLogin(); });
+      document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape') { closeLogin(); closeTx(); } });
 
       renderAuth();
       render();
+      showView((location.hash || '').slice(1));
       start();
     })();
   </script>
