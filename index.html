@@ -651,8 +651,8 @@
           <p>Only the admin can make changes</p>
         </div>
       </div>
-      <label for="loginId" class="first">Admin ID</label>
-      <input type="text" id="loginId" autocomplete="username" maxlength="100" required>
+      <label for="loginId" class="first">Admin email</label>
+      <input type="email" id="loginId" autocomplete="username" maxlength="150" required>
       <label for="loginPw">Password</label>
       <input type="password" id="loginPw" autocomplete="current-password" maxlength="200" required>
       <div class="login-err" id="loginErr"></div>
@@ -662,6 +662,8 @@
   </div>
   <div id="toast"></div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
+  <script src="supabase-config.js"></script>
   <script>
     (function () {
       var KEY = 'teamFundData.v2';
@@ -698,72 +700,177 @@
         return '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">' + ICONS[name] + '</svg>';
       }
 
-      var API = 'api.php';
+      var cfg = window.SUPABASE_CONFIG || {};
       var state = { employees: [], categories: [], entries: [] };
       var role = 'viewer';
       var adminId = '';
-      var csrf = '';
       var editingCat = null;
-
-      function request(method, body) {
-        var opts = { method: method, credentials: 'same-origin', headers: {} };
-        if (body) {
-          opts.headers['Content-Type'] = 'application/json';
-          if (csrf) opts.headers['X-CSRF-Token'] = csrf;
-          opts.body = JSON.stringify(body);
-        }
-        return fetch(API, opts).then(function (r) {
-          return r.json().then(function (j) { j.status = r.status; return j; }, function () {
-            throw new Error('The server returned an unexpected response (HTTP ' + r.status + '). Check the PHP / Apache error log and the file permissions of config.php and data/.');
-          });
-        });
-      }
+      var configured = !!(window.supabase && cfg.url && cfg.anonKey && cfg.url.indexOf('YOUR-PROJECT') === -1 && cfg.anonKey.indexOf('YOUR-ANON') === -1);
+      var sb = configured ? window.supabase.createClient(cfg.url, cfg.anonKey, { auth: { persistSession: true, autoRefreshToken: true } }) : null;
 
       function showNet(msg) {
         var b = $('netBanner'); b.textContent = msg; b.classList.remove('hidden');
       }
 
-      function applyPayload(p) {
-        state = p.state;
-        role = p.role;
-        adminId = p.adminId || '';
-        csrf = p.csrf || '';
-        document.body.classList.toggle('is-admin', role === 'admin');
-        $('netBanner').classList.add('hidden');
-        renderAuth();
-        render();
+      /* Data access (all rules are enforced by the database, see supabase/schema.sql) */
+      function mapCat(r) {
+        return { id: r.id, name: r.name, kind: r.kind, fixed: r.fixed, amount: r.amount, afterTime: r.after_time || '', color: r.color };
+      }
+      function mapEntry(r) {
+        return {
+          id: r.id, catId: r.cat_id, kind: r.kind, empId: r.emp_id, date: r.entry_date, time: r.entry_time || '',
+          amount: r.amount, note: r.note || '', created: Number(r.created) || 0
+        };
       }
 
-      function api(action, data) {
-        var body = { action: action };
-        Object.keys(data || {}).forEach(function (k) { body[k] = data[k]; });
-        return request('POST', body).then(function (j) {
-          if (j.ok) { applyPayload(j); return true; }
-          if (j.status === 401 || j.status === 403) {
-            if (role === 'admin') {
-              role = 'viewer'; csrf = '';
-              document.body.classList.remove('is-admin');
-              renderAuth(); render(); openLogin();
-              toast('Session expired. Please log in again.');
-            } else {
-              toast('Only the admin can make changes.');
-            }
-          } else {
-            toast(j.error || 'Request failed');
-          }
-          return false;
-        }).catch(function () { toast('Cannot reach the server'); return false; });
+      function fetchAll(table) {
+        var rows = [];
+        function page(from) {
+          return sb.from(table).select('*').order('seq', { ascending: true }).range(from, from + 999).then(function (res) {
+            if (res.error) throw res.error;
+            rows = rows.concat(res.data);
+            return res.data.length === 1000 ? page(from + 1000) : rows;
+          });
+        }
+        return page(0);
       }
 
       function loadState() {
-        request('GET').then(function (j) {
-          if (j.ok) { applyPayload(j); if (role === 'admin') offerImport(); }
-          else showNet(j.error || 'Could not load data from the server');
+        if (!sb) return Promise.resolve();
+        return Promise.all([fetchAll('employees'), fetchAll('categories'), fetchAll('entries')]).then(function (r) {
+          state = {
+            employees: r[0].map(function (e) { return { id: e.id, name: e.name }; }),
+            categories: r[1].map(mapCat),
+            entries: r[2].map(mapEntry)
+          };
+          $('netBanner').classList.add('hidden');
+          render();
         }).catch(function (e) {
-          showNet(e instanceof TypeError
-            ? 'Cannot reach the server. Open this page through the web server (not as a local file) and make sure PHP is running.'
-            : e.message);
+          showNet('Could not load data: ' + ((e && e.message) || 'network error'));
         });
+      }
+
+      function applySession(session) {
+        var u = session && session.user;
+        var isAdmin = !!u && !!u.app_metadata && u.app_metadata.role === 'admin';
+        role = isAdmin ? 'admin' : 'viewer';
+        adminId = isAdmin ? (u.email || 'admin') : '';
+        document.body.classList.toggle('is-admin', isAdmin);
+        renderAuth();
+      }
+
+      function guarded(q) {
+        return q.select('id').then(function (res) {
+          if (!res.error && Array.isArray(res.data) && res.data.length === 0) {
+            return { error: { code: 'NOROWS', message: 'Nothing was changed. You may not have permission, or it was already removed.' } };
+          }
+          return res;
+        });
+      }
+
+      function chunked(table, rows) {
+        var p = Promise.resolve({});
+        for (var i = 0; i < rows.length; i += 500) {
+          (function (part) {
+            p = p.then(function (r) { return r.error ? r : sb.from(table).insert(part); });
+          })(rows.slice(i, i + 500));
+        }
+        return p;
+      }
+
+      function importAll(d) {
+        var emps = d.employees.map(function (e) { return { id: e.id, name: e.name }; });
+        var cats = (d.categories || []).map(function (c) {
+          return {
+            id: c.id, name: c.name, kind: c.kind, fixed: !!c.fixed, amount: c.fixed ? c.amount : 0,
+            after_time: c.afterTime || '', color: (c.color || 0) % PALETTE.length
+          };
+        });
+        var ents = d.entries.map(function (e) {
+          return {
+            id: e.id, cat_id: e.catId, emp_id: e.empId, kind: e.kind, entry_date: e.date, entry_time: e.time || '',
+            amount: e.amount, note: e.note || '', created: e.created || 0
+          };
+        });
+        return chunked('employees', emps).then(function (r) {
+          if (r.error || !cats.length) return r;
+          return sb.from('categories').upsert(cats, { onConflict: 'id' });
+        }).then(function (r) {
+          return r.error ? r : chunked('entries', ents);
+        });
+      }
+
+      function runAction(action, d) {
+        switch (action) {
+          case 'employee_add':
+            return sb.from('employees').insert({ name: d.name });
+          case 'employee_remove':
+            return guarded(sb.from('employees').delete().eq('id', d.id));
+          case 'category_save':
+            if (d.id) {
+              return guarded(sb.from('categories').update({ name: d.name, fixed: d.fixed, amount: d.amount, after_time: d.afterTime }).eq('id', d.id));
+            }
+            return sb.from('categories').insert({
+              name: d.name, kind: d.kind, fixed: d.fixed, amount: d.amount, after_time: d.afterTime,
+              color: state.categories.length % PALETTE.length
+            });
+          case 'category_delete':
+            return guarded(sb.from('categories').delete().eq('id', d.id));
+          case 'entry_add':
+            var c = catById(d.catId);
+            return sb.from('entries').insert({
+              cat_id: d.catId, emp_id: d.empId, kind: c ? c.kind : 'in', entry_date: d.date,
+              entry_time: d.time || '', amount: d.amount, note: d.note || '', created: Date.now()
+            });
+          case 'entry_delete':
+            return guarded(sb.from('entries').delete().eq('id', d.id));
+          case 'import':
+            return importAll(d);
+        }
+        return Promise.resolve({ error: { message: 'Unknown action' } });
+      }
+
+      function handleDbError(err, action) {
+        var m = (err && err.message) || 'Request failed';
+        if (/jwt/i.test(m)) {
+          sb.auth.signOut();
+          toast('Session expired. Please log in again.');
+          openLogin();
+        } else if (err.code === '42501' || /row-level security|permission denied/i.test(m)) {
+          toast('Only the admin can make changes.');
+        } else if (err.code === '23505') {
+          toast(action === 'employee_add' ? 'Employee already exists' : action === 'import' ? 'Import failed: duplicate data' : 'A category with this name already exists');
+        } else if (err.code === '23503') {
+          toast(action === 'category_delete' ? 'Transactions use this category. Delete them first.' : 'Related data is missing');
+        } else {
+          toast(m);
+        }
+      }
+
+      function api(action, data) {
+        if (!sb) { toast('Supabase is not configured yet'); return Promise.resolve(false); }
+        return Promise.resolve(runAction(action, data || {})).then(function (res) {
+          if (res && res.error) { handleDbError(res.error, action); return false; }
+          return loadState().then(function () { return true; });
+        }).catch(function (e) { toast((e && e.message) || 'Request failed'); return false; });
+      }
+
+      function start() {
+        if (!sb) {
+          showNet(window.supabase
+            ? 'Supabase is not configured yet. Add your project URL and anon key to supabase-config.js.'
+            : 'Could not load the Supabase library. Check your internet connection.');
+          return;
+        }
+        sb.auth.getSession().then(function (r) {
+          applySession(r.data.session);
+          return loadState();
+        }).then(function () { offerImport(); });
+        sb.auth.onAuthStateChange(function (event, session) {
+          applySession(session);
+          render();
+        });
+        setInterval(function () { if (role !== 'admin' && !document.hidden) loadState(); }, 60000);
       }
 
       /* Login / logout */
@@ -792,10 +899,7 @@
       }
 
       function logout() {
-        request('POST', { action: 'logout' }).then(function (j) {
-          if (j.ok) { applyPayload(j); toast('Logged out'); }
-          else toast(j.error || 'Could not log out');
-        }).catch(function () { toast('Cannot reach the server'); });
+        sb.auth.signOut().then(function () { toast('Logged out'); });
       }
 
       /* One-time import of data saved in this browser by earlier versions */
@@ -1248,11 +1352,18 @@
       $('loginForm').onsubmit = function (ev) {
         ev.preventDefault();
         var btn = $('loginBtn'); btn.disabled = true; $('loginErr').textContent = '';
-        request('POST', { action: 'login', id: $('loginId').value, password: $('loginPw').value }).then(function (j) {
-          if (j.ok) { closeLogin(); applyPayload(j); toast('Logged in as admin'); offerImport(); }
-          else $('loginErr').textContent = j.error || 'Login failed';
-        }).catch(function (e) {
-          $('loginErr').textContent = e instanceof TypeError ? 'Cannot reach the server' : e.message;
+        if (!sb) { $('loginErr').textContent = 'Supabase is not configured yet.'; btn.disabled = false; return; }
+        sb.auth.signInWithPassword({ email: $('loginId').value.trim(), password: $('loginPw').value }).then(function (res) {
+          if (res.error) { $('loginErr').textContent = 'Invalid email or password'; return; }
+          var u = res.data.user;
+          if (!(u && u.app_metadata && u.app_metadata.role === 'admin')) {
+            return sb.auth.signOut().then(function () { $('loginErr').textContent = 'This account does not have admin access.'; });
+          }
+          closeLogin();
+          applySession(res.data.session);
+          return loadState().then(function () { toast('Logged in as admin'); offerImport(); });
+        }).catch(function () {
+          $('loginErr').textContent = 'Cannot reach the server';
         }).then(function () { btn.disabled = false; });
       };
       $('loginCancel').onclick = closeLogin;
@@ -1261,7 +1372,7 @@
 
       renderAuth();
       render();
-      loadState();
+      start();
     })();
   </script>
 </body>
