@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Late Penalty Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f4f5fb;
+      --card: #fff;
+      --text: #1e2347;
+      --muted: #7b819c;
+      --primary: #6d5ef0;
+      --primary-2: #8470f5;
+      --danger: #e11d48;
+      --ok: #16a34a;
+      --border: #e6e8f2;
+      --soft: #f3f5fc;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+    }
+
+    svg.ic {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex: 0 0 auto;
+    }
+
+    i[data-ic] { display: inline-flex; font-style: normal; }
+
+    /* Header */
+    header {
+      background: linear-gradient(100deg, #2d2c8c 0%, #3f43b8 55%, #4a56d6 100%);
+      color: #fff;
+      padding: 0 28px;
+      min-height: 84px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .logo {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #6d5ef0, #4f46e5);
+      display: grid;
+      place-items: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, .25);
+      flex: 0 0 auto;
+    }
+
+    .logo svg.ic { width: 26px; height: 26px; }
+
+    header h1 { margin: 0; font-size: 1.55rem; font-weight: 800; }
+    header p { margin: 3px 0 0; font-size: .82rem; opacity: .9; }
+    .head-text { flex: 1; min-width: 0; }
+
+    .date-pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255, 255, 255, .14);
+      border-radius: 14px;
+      padding: 10px 18px;
+      font-weight: 700;
+      font-size: .85rem;
+      white-space: nowrap;
+      position: relative;
+      z-index: 1;
+    }
+
+    .head-art { width: 130px; height: 84px; flex: 0 0 auto; margin-right: -8px; }
+
+    main { width: 100%; margin: 0; padding: 14px 12px 40px; }
+
+    /* Stat cards */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .stat {
+      border-radius: 18px;
+      padding: 18px 22px;
+      box-shadow: 0 2px 10px rgba(60, 70, 130, .07);
+      border: 1px solid rgba(255, 255, 255, .8);
+    }
+
+    .stat .top { display: flex; align-items: center; gap: 12px; }
+    .stat .sicon { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; }
+    .stat .slabel { font-weight: 700; font-size: .8rem; }
+    .stat .sval { font-size: 1.9rem; font-weight: 800; margin: 8px 0 4px; color: #111637; }
+    .stat .ssub { font-size: .75rem; color: var(--muted); display: flex; align-items: center; gap: 5px; }
+    .stat .ssub svg.ic { width: 13px; height: 13px; }
+
+    .s-blue { background: linear-gradient(135deg, #eef5ff, #f6faff); }
+    .s-blue .sicon { background: #dbeafe; color: #2563eb; }
+    .s-blue .slabel { color: #1e40af; }
+    .s-green { background: linear-gradient(135deg, #ecfbf5, #f4fdf9); }
+    .s-green .sicon { background: #bbf7d9; color: #059669; }
+    .s-green .slabel { color: #047857; }
+    .s-purple { background: linear-gradient(135deg, #f1efff, #f8f7ff); }
+    .s-purple .sicon { background: #ddd6fe; color: #6d28d9; }
+    .s-purple .slabel { color: #6d28d9; }
+    .s-purple.neg .sval { color: var(--danger); }
+    .s-orange { background: linear-gradient(135deg, #fff6ec, #fffaf4); }
+    .s-orange .sicon { background: #fed7aa; color: #ea580c; }
+    .s-orange .slabel { color: #b45309; }
+    .ssub.green { color: var(--ok); font-weight: 600; }
+    .ssub.violet { color: #6d28d9; font-weight: 500; }
+
+    /* Cards */
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1.12fr;
+      gap: 18px;
+      margin-bottom: 18px;
+      align-items: start;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 18px;
+      padding: 18px 20px 20px;
+      box-shadow: 0 2px 10px rgba(60, 70, 130, .07);
+      border: 1px solid #eef0f8;
+    }
+
+    .card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+    .card-head h2 { margin: 0; font-size: 1rem; font-weight: 800; }
+    .card-head p { margin: 2px 0 0; font-size: .75rem; color: var(--muted); }
+    .card-head .grow { flex: 1; min-width: 0; }
+
+    .badge { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; color: #fff; flex: 0 0 auto; }
+    .badge.blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+    .badge.plum { background: linear-gradient(135deg, #c026d3, #7c3aed); }
+    .badge.lavender { background: #e0e7ff; color: #4f46e5; }
+    .badge.violet { background: linear-gradient(135deg, #6d5ef0, #7c3aed); }
+
+    .card.spend { background: linear-gradient(180deg, #fbf1fb 0, #fff 120px); }
+    .card.spend h2 { color: #9b2c9b; }
+
+    label { display: block; font-size: .75rem; color: #3b4163; font-weight: 600; margin: 12px 0 6px; }
+
+    .field { position: relative; }
+    .field > i {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #8b93a7;
+      pointer-events: none;
+    }
+    .field > i svg.ic { width: 16px; height: 16px; }
+    .field .rupee { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #8b93a7; font-weight: 600; pointer-events: none; }
+
+    input, select, textarea {
+      width: 100%;
+      height: 42px;
+      padding: 0 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font: inherit;
+      font-size: .85rem;
+      color: var(--text);
+      background: #fff;
+    }
+
+    .field input, .field select { padding-left: 38px; }
+
+    select {
+      appearance: none;
+      -webkit-appearance: none;
+      padding-right: 32px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+    }
+
+    textarea { height: 76px; padding: 10px 12px; resize: none; display: block; }
+    input::placeholder, textarea::placeholder { color: #a3a9bf; }
+
+    input:focus, select:focus, textarea:focus {
+      outline: 2px solid rgba(109, 94, 240, .45);
+      border-color: transparent;
+    }
+
+    .row { display: flex; gap: 12px; }
+    .row > * { flex: 1; min-width: 0; }
+
+    .hint { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: .75rem; margin-top: 12px; }
+    .hint svg.ic { width: 14px; height: 14px; color: #94a3b8; }
+    .left-hint { font-size: .78rem; font-weight: 700; color: #9b2c9b; margin-top: 8px; }
+    .left-hint.neg { color: var(--danger); }
+    .left-hint:empty { display: none; }
+    .count { text-align: right; font-size: .68rem; color: #a3a9bf; margin-top: -18px; margin-right: 8px; position: relative; pointer-events: none; }
+
+    button { font: inherit; cursor: pointer; border: 0; }
+
+    .btn-main {
+      width: 100%;
+      margin-top: 16px;
+      height: 44px;
+      border-radius: 10px;
+      color: #fff;
+      font-weight: 700;
+      font-size: .85rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      box-shadow: 0 4px 12px rgba(109, 94, 240, .3);
+    }
+    .btn-main.plum { background: linear-gradient(135deg, #a8479f, #9333a0); box-shadow: 0 4px 12px rgba(147, 51, 160, .25); height: 40px; margin-top: 14px; }
+    .btn-main:hover { filter: brightness(1.06); }
+
+    .btn-add {
+      height: 36px;
+      padding: 0 16px;
+      border-radius: 10px;
+      color: #fff;
+      font-weight: 700;
+      font-size: .8rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+    }
+
+    .btn-soft {
+      height: 36px;
+      padding: 0 16px;
+      border-radius: 10px;
+      background: #e8edff;
+      color: #4f46e5;
+      font-weight: 700;
+      font-size: .8rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-del {
+      background: #fde9ee;
+      color: var(--danger);
+      font-weight: 600;
+      font-size: .72rem;
+      padding: 5px 11px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-del svg.ic { width: 13px; height: 13px; }
+
+    /* Employees */
+    .emp-add { display: flex; gap: 8px; align-items: center; }
+    .emp-add .field { width: 150px; }
+    .emp-add input { height: 36px; font-size: .78rem; padding-left: 34px; }
+    .emp-add .field > i { left: 10px; }
+
+    .avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #e3e7fb;
+      color: #4338ca;
+      font-weight: 700;
+      font-size: .72rem;
+      display: inline-grid;
+      place-items: center;
+      margin-right: 10px;
+      vertical-align: middle;
+    }
+
+    .scroll { overflow-x: auto; }
+
+    table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: .8rem; }
+    thead th {
+      background: #f1f4fc;
+      color: #6b7390;
+      font-weight: 700;
+      font-size: .66rem;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      text-align: left;
+      padding: 10px 14px;
+    }
+    thead th:first-child { border-radius: 10px 0 0 10px; }
+    thead th:last-child { border-radius: 0 10px 10px 0; }
+    td { padding: 9px 14px; border-bottom: 1px solid #eef0f8; vertical-align: middle; }
+    tbody tr:last-child td { border-bottom: 0; }
+    td.pos { color: var(--ok); font-weight: 700; }
+    td.neg { color: var(--danger); font-weight: 700; }
+    td.name { font-weight: 600; }
+
+    .tag { display: inline-block; padding: 3px 11px; border-radius: 8px; font-size: .72rem; font-weight: 600; }
+    .tag.late { background: #fde9ee; color: var(--danger); }
+    .tag.spent { background: #efe7fd; color: #7c3aed; }
+
+    tfoot td { background: #f8f9fe; font-weight: 700; border-bottom: 0; padding: 8px 14px; }
+    tfoot td.lbl { text-align: right; color: #6b7390; }
+    tfoot tr:first-child td:first-child { border-radius: 10px 0 0 0; }
+    tfoot tr:last-child td:first-child { border-radius: 0 0 0 10px; }
+    tfoot tr:last-child td:last-child { border-radius: 0 0 10px 0; }
+
+    .empty { color: var(--muted); text-align: center; padding: 18px 0; }
+
+    /* History */
+    .toolbar { display: flex; gap: 10px; align-items: center; }
+    .toolbar select { width: 130px; height: 36px; font-size: .8rem; }
+
+    #toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1e2347;
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 10px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s;
+      z-index: 10;
+    }
+    #toast.show { opacity: 1; }
+
+    @media (max-width: 1000px) {
+      .grid { grid-template-columns: 1fr; }
+      .head-art { display: none; }
+    }
+
+    @media (max-width: 640px) {
+      header { padding: 12px 16px; flex-wrap: wrap; }
+      .date-pill { padding: 8px 12px; }
+      .card-head.wrap { flex-wrap: wrap; }
+      .toolbar { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <span class="logo"><i data-ic="clock"></i></span>
+    <div class="head-text">
+      <h1>Late Penalty Tracker</h1>
+      <p>Employees arriving after 9:00 AM pay <span id="penaltyLabel"></span> per late. The fund is used for parties.</p>
+    </div>
+    <div class="date-pill"><i data-ic="calendar"></i><span id="headDate"></span></div>
+    <svg class="head-art" viewBox="0 0 130 84" aria-hidden="true">
+      <ellipse cx="108" cy="30" rx="6" ry="16" fill="#5aa7ff" transform="rotate(-20 108 30)" opacity=".85" />
+      <ellipse cx="120" cy="38" rx="5" ry="14" fill="#7cc0ff" transform="rotate(15 120 38)" opacity=".85" />
+      <ellipse cx="114" cy="52" rx="4" ry="11" fill="#4f8df0" transform="rotate(35 114 52)" opacity=".8" />
+      <circle cx="62" cy="52" r="30" fill="#4f46e5" stroke="#8e8cf5" stroke-width="3" />
+      <circle cx="62" cy="52" r="23" fill="#fff" />
+      <path d="M62 38v14l9 6" stroke="#4f46e5" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+      <circle cx="42" cy="26" r="7" fill="#6d5ef0" />
+      <circle cx="82" cy="26" r="7" fill="#6d5ef0" />
+    </svg>
+  </header>
+
+  <main>
+    <section class="stats">
+      <div class="stat s-blue">
+        <div class="top"><span class="sicon"><i data-ic="users"></i></span><span class="slabel">Total Collected</span></div>
+        <div class="sval" id="sCollected">₹0</div>
+        <div class="ssub green"><i data-ic="arrowUp"></i><span id="sPerLate"></span></div>
+      </div>
+      <div class="stat s-green">
+        <div class="top"><span class="sicon"><i data-ic="coins"></i></span><span class="slabel">Total Spent on Parties</span></div>
+        <div class="sval" id="sSpent">₹0</div>
+        <div class="ssub" id="sSpentSub">No expenses yet</div>
+      </div>
+      <div class="stat s-purple" id="balBox">
+        <div class="top"><span class="sicon"><i data-ic="wallet"></i></span><span class="slabel">Fund Balance</span></div>
+        <div class="sval" id="sBalance">₹0</div>
+        <div class="ssub violet"><i data-ic="sparkles"></i>Available for next party</div>
+      </div>
+      <div class="stat s-orange">
+        <div class="top"><span class="sicon"><i data-ic="star"></i></span><span class="slabel">Total Late Marks</span></div>
+        <div class="sval" id="sLates">0</div>
+        <div class="ssub">Across all employees</div>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="card">
+        <div class="card-head">
+          <span class="badge blue"><i data-ic="clock"></i></span>
+          <div>
+            <h2>Mark Late</h2>
+            <p>Record an employee who arrived after 9:00 AM</p>
+          </div>
+        </div>
+        <form id="lateForm">
+          <label for="lateEmp" style="margin-top:0">Employee</label>
+          <div class="field"><i data-ic="user"></i><select id="lateEmp" required></select></div>
+          <div class="row">
+            <div>
+              <label for="lateDate">Date</label>
+              <div class="field"><i data-ic="calendar"></i><input type="date" id="lateDate" required></div>
+            </div>
+            <div>
+              <label for="lateTime">Arrival time</label>
+              <div class="field"><i data-ic="clock"></i><input type="time" id="lateTime" required></div>
+            </div>
+          </div>
+          <div class="hint"><i data-ic="info"></i>Penalty: ₹120 (fixed). Time must be after 09:00.</div>
+          <button class="btn-main" type="submit"><i data-ic="plus"></i>Add Late Penalty</button>
+        </form>
+      </div>
+
+      <div class="card spend">
+        <div class="card-head">
+          <span class="badge plum"><i data-ic="party"></i></span>
+          <div>
+            <h2>Spend from Fund (Party)</h2>
+            <p>Use the collected fund for parties</p>
+          </div>
+        </div>
+        <form id="spendForm">
+          <div class="row">
+            <div>
+              <label for="spendEmp" style="margin-top:0">Spent by</label>
+              <div class="field"><i data-ic="users"></i><select id="spendEmp" required></select></div>
+            </div>
+            <div>
+              <label for="spendAmt" style="margin-top:0">Amount (₹)</label>
+              <div class="field"><span class="rupee">₹</span><input type="number" id="spendAmt" min="1" step="1" placeholder="Enter amount" required style="padding-left:30px"></div>
+            </div>
+          </div>
+          <div class="left-hint" id="spendLeft"></div>
+          <div class="row">
+            <div>
+              <label for="spendDate">Date</label>
+              <div class="field"><i data-ic="calendar"></i><input type="date" id="spendDate" required></div>
+            </div>
+            <div></div>
+          </div>
+          <label for="spendNote">Note (optional) – which party?</label>
+          <textarea id="spendNote" maxlength="200" placeholder="e.g. Diwali team lunch"></textarea>
+          <div class="count" id="noteCount">0/200</div>
+          <button class="btn-main plum" type="submit"><i data-ic="wallet"></i>Deduct from Fund</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="card-head wrap">
+          <span class="badge lavender"><i data-ic="users"></i></span>
+          <div class="grow">
+            <h2>Employees</h2>
+            <p>Manage employee late marks</p>
+          </div>
+          <form id="empForm" class="emp-add">
+            <div class="field"><i data-ic="search"></i><input type="text" id="empName" placeholder="New employee name" maxlength="60" required></div>
+            <button class="btn-add" type="submit"><i data-ic="plus"></i>Add</button>
+          </form>
+        </div>
+        <div class="scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Lates</th>
+                <th>Owed</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="empBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head wrap">
+        <span class="badge violet"><i data-ic="history"></i></span>
+        <div class="grow">
+          <h2>History</h2>
+          <p>All late entries and penalties</p>
+        </div>
+        <div class="toolbar">
+          <select id="filterType">
+            <option value="all">All</option>
+            <option value="late">Late penalties</option>
+            <option value="spent">Party spends</option>
+          </select>
+          <select id="filterEmp"></select>
+          <button class="btn-soft" id="exportBtn" type="button"><i data-ic="download"></i>Export CSV</button>
+        </div>
+      </div>
+      <div class="scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Type</th>
+              <th>Employee</th>
+              <th>Details</th>
+              <th>Amount</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="histBody"></tbody>
+          <tfoot id="histFoot"></tfoot>
+        </table>
+      </div>
+    </section>
+  </main>
+  <div id="toast"></div>
+
+  <script>
+    (function () {
+      var PENALTY = 120;
+      var KEY = 'latePenaltyData.v1';
+      var state = load();
+
+      var ICONS = {
+        clock: '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+        users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+        user: '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+        coins: '<circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/>',
+        wallet: '<path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/>',
+        star: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+        calendar: '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+        info: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
+        plus: '<path d="M5 12h14"/><path d="M12 5v14"/>',
+        trash: '<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c0 1 1 2 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>',
+        download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
+        history: '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/>',
+        arrowUp: '<path d="m5 12 7-7 7 7"/><path d="M12 19V5"/>',
+        sparkles: '<path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/>',
+        search: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+        party: '<path d="M5.8 11.3 2 22l10.7-3.79"/><path d="M4 3h.01"/><path d="M22 8h.01"/><path d="M15 2h.01"/><path d="M22 20h.01"/><path d="m22 2-2.24.75a2.9 2.9 0 0 0-1.96 3.12c.1.86-.57 1.63-1.45 1.63h-.38c-.86 0-1.6.6-1.76 1.44L14 10"/><path d="m22 13-.82-.33c-.86-.34-1.82.2-1.98 1.11-.11.7-.72 1.22-1.43 1.22H17"/><path d="m11 2 .33.82c.34.86-.2 1.82-1.11 1.98C9.52 4.9 9 5.52 9 6.23V7"/><path d="M11 13c1.93 1.93 2.83 4.17 2 5-.83.83-3.07-.07-5-2-1.93-1.93-2.83-4.17-2-5 .83-.83 3.07.07 5 2Z"/>'
+      };
+      function ic(name) {
+        return '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">' + ICONS[name] + '</svg>';
+      }
+
+      function load() {
+        try {
+          var d = JSON.parse(localStorage.getItem(KEY));
+          if (d && Array.isArray(d.employees) && Array.isArray(d.entries)) return d;
+        } catch (e) { }
+        return { employees: [], entries: [] };
+      }
+      function save() { localStorage.setItem(KEY, JSON.stringify(state)); }
+      function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+      function $(id) { return document.getElementById(id); }
+      function money(n) { return '₹' + Number(n).toLocaleString('en-IN'); }
+      function today() {
+        var d = new Date();
+        d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+        return d.toISOString().slice(0, 10);
+      }
+      function empStats(id) {
+        var paid = 0, spent = 0, lates = 0;
+        state.entries.forEach(function (e) {
+          if (e.empId !== id) return;
+          if (e.type === 'late') { paid += e.amount; lates++; } else spent += e.amount;
+        });
+        return { lates: lates, paid: paid, spent: spent, left: paid - spent };
+      }
+      function renderSpendLeft() {
+        var h = $('spendLeft'), id = $('spendEmp').value;
+        if (!id) { h.textContent = ''; h.className = 'left-hint'; return; }
+        var s = empStats(id);
+        h.textContent = 'Left in ' + empName(id) + "'s account: " + money(s.left) + ' (paid ' + money(s.paid) + ', spent ' + money(s.spent) + ')';
+        h.className = 'left-hint' + (s.left < 0 ? ' neg' : '');
+      }
+      function empName(id) {
+        var e = state.employees.find(function (x) { return x.id === id; });
+        return e ? e.name : 'Unknown';
+      }
+      function toast(msg) {
+        var t = $('toast'); t.textContent = msg; t.classList.add('show');
+        clearTimeout(toast.t); toast.t = setTimeout(function () { t.classList.remove('show'); }, 2200);
+      }
+      function el(tag, text, cls) {
+        var e = document.createElement(tag);
+        if (text !== undefined) e.textContent = text;
+        if (cls) e.className = cls;
+        return e;
+      }
+      function fillSelect(sel, withAll) {
+        var prev = sel.value;
+        sel.innerHTML = '';
+        if (withAll) {
+          var o = el('option', 'All employees'); o.value = 'all'; sel.appendChild(o);
+        } else if (!state.employees.length) {
+          var p = el('option', 'Add an employee first'); p.value = ''; sel.appendChild(p);
+        }
+        state.employees.slice().sort(function (a, b) { return a.name.localeCompare(b.name); })
+          .forEach(function (e) { var o = el('option', e.name); o.value = e.id; sel.appendChild(o); });
+        if (prev) sel.value = prev;
+        if (!sel.value && sel.options.length) sel.selectedIndex = 0;
+      }
+
+      function render() {
+        var collected = 0, spent = 0, lates = 0, spends = 0;
+        state.entries.forEach(function (e) {
+          if (e.type === 'late') { collected += e.amount; lates++; } else { spent += e.amount; spends++; }
+        });
+        var bal = collected - spent;
+        $('sCollected').textContent = money(collected);
+        $('sSpent').textContent = money(spent);
+        $('sSpentSub').textContent = spends ? spends + (spends === 1 ? ' expense' : ' expenses') + ' recorded' : 'No expenses yet';
+        $('sBalance').textContent = money(bal);
+        $('sLates').textContent = lates;
+        $('balBox').classList.toggle('neg', bal < 0);
+
+        fillSelect($('lateEmp')); fillSelect($('spendEmp')); fillSelect($('filterEmp'), true);
+
+        var body = $('empBody'); body.innerHTML = '';
+        if (!state.employees.length) {
+          var tr = el('tr'); var td = el('td', 'No employees yet', 'empty'); td.colSpan = 4; tr.appendChild(td); body.appendChild(tr);
+        }
+        state.employees.slice().sort(function (a, b) { return a.name.localeCompare(b.name); }).forEach(function (e) {
+          var s = empStats(e.id);
+          var tr = el('tr');
+          var nameTd = el('td', undefined, 'name');
+          nameTd.appendChild(el('span', e.name.charAt(0).toUpperCase(), 'avatar'));
+          nameTd.appendChild(document.createTextNode(e.name));
+          tr.appendChild(nameTd);
+          tr.appendChild(el('td', s.lates));
+          tr.appendChild(el('td', money(s.paid)));
+          var act = el('td'); var b = el('button', undefined, 'btn-del');
+          b.innerHTML = ic('trash') + 'Remove';
+          b.onclick = function () { removeEmployee(e.id); };
+          act.appendChild(b); tr.appendChild(act); body.appendChild(tr);
+        });
+
+        renderSpendLeft();
+        renderHistory();
+      }
+
+      function renderHistory() {
+        var type = $('filterType').value, emp = $('filterEmp').value || 'all';
+        var list = state.entries.filter(function (e) {
+          return (type === 'all' || e.type === type) && (emp === 'all' || e.empId === emp);
+        }).sort(function (a, b) { return (b.date + (b.time || '')).localeCompare(a.date + (a.time || '')) || b.created - a.created; });
+        var body = $('histBody'); body.innerHTML = '';
+        var foot = $('histFoot'); foot.innerHTML = '';
+        var paid = 0, spent = 0;
+        list.forEach(function (e) { if (e.type === 'late') paid += e.amount; else spent += e.amount; });
+        if (list.length) {
+          [['Total Paid', paid, ''], ['Total Spent', spent, ''], ['Left', paid - spent, paid - spent < 0 ? 'neg' : '']].forEach(function (r) {
+            var ft = el('tr');
+            var lbl = el('td', r[0], 'lbl'); lbl.colSpan = 4;
+            ft.appendChild(lbl);
+            ft.appendChild(el('td', money(r[1]), r[2]));
+            ft.appendChild(el('td'));
+            foot.appendChild(ft);
+          });
+        }
+        if (!list.length) {
+          var tr = el('tr'); var td = el('td', 'No records', 'empty'); td.colSpan = 6; tr.appendChild(td); body.appendChild(tr);
+          return;
+        }
+        list.forEach(function (e) {
+          var tr = el('tr');
+          tr.appendChild(el('td', e.date));
+          var t = el('td'); t.appendChild(el('span', e.type === 'late' ? 'Late' : 'Party', 'tag ' + (e.type === 'late' ? 'late' : 'spent'))); tr.appendChild(t);
+          tr.appendChild(el('td', empName(e.empId), 'name'));
+          tr.appendChild(el('td', e.type === 'late' ? 'Arrived ' + e.time : (e.note || '—')));
+          tr.appendChild(el('td', (e.type === 'late' ? '+ ' : '− ') + money(e.amount), e.type === 'late' ? 'pos' : 'neg'));
+          var a = el('td'); var b = el('button', undefined, 'btn-del');
+          b.innerHTML = ic('trash') + 'Delete';
+          b.onclick = function () {
+            if (confirm('Delete this record?')) {
+              state.entries = state.entries.filter(function (x) { return x.id !== e.id; });
+              save(); render();
+            }
+          };
+          a.appendChild(b); tr.appendChild(a); body.appendChild(tr);
+        });
+      }
+
+      function removeEmployee(id) {
+        var has = state.entries.some(function (e) { return e.empId === id; });
+        var msg = has ? 'This employee has records. Remove the employee AND all their records?' : 'Remove this employee?';
+        if (!confirm(msg)) return;
+        state.employees = state.employees.filter(function (e) { return e.id !== id; });
+        state.entries = state.entries.filter(function (e) { return e.empId !== id; });
+        save(); render();
+      }
+
+      $('empForm').onsubmit = function (ev) {
+        ev.preventDefault();
+        var name = $('empName').value.trim();
+        if (!name) return;
+        if (state.employees.some(function (e) { return e.name.toLowerCase() === name.toLowerCase(); })) {
+          toast('Employee already exists'); return;
+        }
+        state.employees.push({ id: uid(), name: name });
+        save(); $('empName').value = ''; render(); toast('Employee added');
+      };
+
+      $('lateForm').onsubmit = function (ev) {
+        ev.preventDefault();
+        var emp = $('lateEmp').value, date = $('lateDate').value, time = $('lateTime').value;
+        if (!emp) { toast('Add an employee first'); return; }
+        if (time <= '09:00') { toast('Arrival time must be after 09:00'); return; }
+        var dup = state.entries.some(function (e) { return e.type === 'late' && e.empId === emp && e.date === date; });
+        if (dup && !confirm('This employee is already marked late on this date. Add again?')) return;
+        state.entries.push({ id: uid(), type: 'late', empId: emp, date: date, time: time, amount: PENALTY, created: Date.now() });
+        save(); $('lateTime').value = ''; render(); toast('Late penalty of ' + money(PENALTY) + ' added');
+      };
+
+      $('spendForm').onsubmit = function (ev) {
+        ev.preventDefault();
+        var emp = $('spendEmp').value, amt = Math.round(Number($('spendAmt').value));
+        if (!emp) { toast('Add an employee first'); return; }
+        if (!(amt > 0)) { toast('Enter a valid amount'); return; }
+        var left = empStats(emp).left;
+        if (amt > left && !confirm('Amount exceeds ' + empName(emp) + "'s remaining balance (" + money(left) + '). Continue?')) return;
+        state.entries.push({ id: uid(), type: 'spent', empId: emp, date: $('spendDate').value, amount: amt, note: $('spendNote').value.trim(), created: Date.now() });
+        save(); $('spendAmt').value = ''; $('spendNote').value = ''; $('noteCount').textContent = '0/200'; render(); toast(money(amt) + ' deducted from fund');
+      };
+
+      $('spendEmp').onchange = renderSpendLeft;
+      $('spendNote').oninput = function () { $('noteCount').textContent = this.value.length + '/200'; };
+      $('filterType').onchange = renderHistory;
+      $('filterEmp').onchange = renderHistory;
+
+      $('exportBtn').onclick = function () {
+        function q(v) { return '"' + String(v).replace(/"/g, '""') + '"'; }
+        var rows = [['Date', 'Type', 'Employee', 'Arrival Time', 'Note', 'Amount']];
+        state.entries.slice().sort(function (a, b) { return a.date.localeCompare(b.date) || a.created - b.created; }).forEach(function (e) {
+          rows.push([e.date, e.type === 'late' ? 'Late penalty' : 'Party spend', empName(e.empId), e.time || '', e.note || '', (e.type === 'late' ? '' : '-') + e.amount]);
+        });
+        var csv = rows.map(function (r) { return r.map(q).join(','); }).join('\n');
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+        a.download = 'late-fund-' + today() + '.csv';
+        a.click();
+      };
+
+      Array.prototype.forEach.call(document.querySelectorAll('i[data-ic]'), function (n) {
+        n.innerHTML = ic(n.getAttribute('data-ic'));
+      });
+      $('penaltyLabel').textContent = money(PENALTY);
+      $('sPerLate').textContent = money(PENALTY) + ' per late';
+      $('headDate').textContent = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+      $('lateDate').value = today();
+      $('spendDate').value = today();
+      render();
+    })();
+  </script>
+</body>
+
+</html>
