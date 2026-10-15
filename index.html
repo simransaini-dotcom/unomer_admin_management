@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Late Penalty Tracker</title>
+  <title>Team Fund Manager</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -31,6 +31,8 @@
       color: var(--text);
       font-size: 14px;
     }
+
+    .hidden { display: none !important; }
 
     svg.ic {
       width: 18px;
@@ -134,7 +136,7 @@
     /* Cards */
     .grid {
       display: grid;
-      grid-template-columns: 1fr 1fr 1.12fr;
+      grid-template-columns: minmax(300px, 1fr) minmax(340px, 1.2fr) minmax(430px, 1.5fr);
       gap: 18px;
       margin-bottom: 18px;
       align-items: start;
@@ -146,6 +148,7 @@
       padding: 18px 20px 20px;
       box-shadow: 0 2px 10px rgba(60, 70, 130, .07);
       border: 1px solid #eef0f8;
+      min-width: 0;
     }
 
     .card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
@@ -158,11 +161,13 @@
     .badge.plum { background: linear-gradient(135deg, #c026d3, #7c3aed); }
     .badge.lavender { background: #e0e7ff; color: #4f46e5; }
     .badge.violet { background: linear-gradient(135deg, #6d5ef0, #7c3aed); }
+    .badge.teal { background: #ccfbf1; color: #0f766e; }
 
-    .card.spend { background: linear-gradient(180deg, #fbf1fb 0, #fff 120px); }
-    .card.spend h2 { color: #9b2c9b; }
+    .card.out { background: linear-gradient(180deg, #fbf1fb 0, #fff 120px); }
+    .card.out h2 { color: #9b2c9b; }
 
     label { display: block; font-size: .75rem; color: #3b4163; font-weight: 600; margin: 12px 0 6px; }
+    label.first { margin-top: 0; }
 
     .field { position: relative; }
     .field > i {
@@ -189,6 +194,8 @@
     }
 
     .field input, .field select { padding-left: 38px; }
+    input[readonly] { background: #f6f7fb; color: #4b5170; font-weight: 600; }
+    input[type="checkbox"] { width: 16px; height: 16px; padding: 0; accent-color: var(--primary); }
 
     select {
       appearance: none;
@@ -217,6 +224,8 @@
     .left-hint:empty { display: none; }
     .count { text-align: right; font-size: .68rem; color: #a3a9bf; margin-top: -18px; margin-right: 8px; position: relative; pointer-events: none; }
 
+    label.chk { display: flex; align-items: center; gap: 8px; font-weight: 600; cursor: pointer; }
+
     button { font: inherit; cursor: pointer; border: 0; }
 
     .btn-main {
@@ -234,7 +243,7 @@
       background: linear-gradient(135deg, var(--primary), var(--primary-2));
       box-shadow: 0 4px 12px rgba(109, 94, 240, .3);
     }
-    .btn-main.plum { background: linear-gradient(135deg, #a8479f, #9333a0); box-shadow: 0 4px 12px rgba(147, 51, 160, .25); height: 40px; margin-top: 14px; }
+    .btn-main.plum { background: linear-gradient(135deg, #a8479f, #9333a0); box-shadow: 0 4px 12px rgba(147, 51, 160, .25); }
     .btn-main:hover { filter: brightness(1.06); }
 
     .btn-add {
@@ -263,6 +272,9 @@
       gap: 8px;
     }
 
+    .btn-ghost { height: 38px; padding: 0 16px; border-radius: 10px; background: #eef0f6; color: var(--text); font-weight: 700; font-size: .8rem; }
+    .btn-save { height: 38px; padding: 0 18px; border-radius: 10px; color: #fff; font-weight: 700; font-size: .8rem; background: linear-gradient(135deg, var(--primary), var(--primary-2)); }
+
     .btn-del {
       background: #fde9ee;
       color: var(--danger);
@@ -275,6 +287,19 @@
       gap: 6px;
     }
     .btn-del svg.ic { width: 13px; height: 13px; }
+
+    .btn-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      background: #eef1fb;
+      color: #4f46e5;
+      display: inline-grid;
+      place-items: center;
+      margin-right: 4px;
+    }
+    .btn-icon svg.ic { width: 14px; height: 14px; }
+    .btn-icon.danger { background: #fde9ee; color: var(--danger); margin-right: 0; }
 
     /* Employees */
     .emp-add { display: flex; gap: 8px; align-items: center; }
@@ -308,6 +333,7 @@
       text-transform: uppercase;
       text-align: left;
       padding: 10px 14px;
+      white-space: nowrap;
     }
     thead th:first-child { border-radius: 10px 0 0 10px; }
     thead th:last-child { border-radius: 0 10px 10px 0; }
@@ -316,10 +342,12 @@
     td.pos { color: var(--ok); font-weight: 700; }
     td.neg { color: var(--danger); font-weight: 700; }
     td.name { font-weight: 600; }
+    td.nowrap { white-space: nowrap; }
+    .sub { display: block; font-size: .68rem; color: var(--muted); font-weight: 500; margin-top: 2px; }
 
-    .tag { display: inline-block; padding: 3px 11px; border-radius: 8px; font-size: .72rem; font-weight: 600; }
-    .tag.late { background: #fde9ee; color: var(--danger); }
-    .tag.spent { background: #efe7fd; color: #7c3aed; }
+    .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 8px; }
+
+    .tag { display: inline-block; padding: 3px 11px; border-radius: 8px; font-size: .72rem; font-weight: 600; white-space: nowrap; }
 
     tfoot td { background: #f8f9fe; font-weight: 700; border-bottom: 0; padding: 8px 14px; }
     tfoot td.lbl { text-align: right; color: #6b7390; }
@@ -329,9 +357,21 @@
 
     .empty { color: var(--muted); text-align: center; padding: 18px 0; }
 
+    /* Category form */
+    .cat-form { background: #f8f9fe; border: 1px solid var(--border); border-radius: 14px; padding: 4px 14px 14px; margin-bottom: 14px; }
+    .cat-form h3 { margin: 12px 0 0; font-size: .85rem; }
+    .cat-actions { display: flex; gap: 8px; margin-top: 14px; }
+
     /* History */
     .toolbar { display: flex; gap: 10px; align-items: center; }
-    .toolbar select { width: 130px; height: 36px; font-size: .8rem; }
+    .toolbar select { width: 160px; height: 36px; font-size: .8rem; }
+
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 12px; }
+    .chip { padding: 6px 12px; border-radius: 99px; background: var(--soft); font-size: .75rem; font-weight: 600; color: #4b5170; }
+    .chip b { margin-left: 4px; }
+    .chip.in b { color: var(--ok); }
+    .chip.out b { color: var(--danger); }
+    .chip.net { background: #e8edff; color: #3730a3; }
 
     #toast {
       position: fixed;
@@ -349,7 +389,12 @@
     }
     #toast.show { opacity: 1; }
 
-    @media (max-width: 1000px) {
+    @media (max-width: 1250px) {
+      .grid { grid-template-columns: 1fr 1fr; }
+      .grid .span-all { grid-column: 1 / -1; }
+    }
+
+    @media (max-width: 800px) {
       .grid { grid-template-columns: 1fr; }
       .head-art { display: none; }
     }
@@ -365,21 +410,19 @@
 
 <body>
   <header>
-    <span class="logo"><i data-ic="clock"></i></span>
+    <span class="logo"><i data-ic="wallet"></i></span>
     <div class="head-text">
-      <h1>Late Penalty Tracker</h1>
-      <p>Employees arriving after 9:00 AM pay <span id="penaltyLabel"></span> per late. The fund is used for parties.</p>
+      <h1>Team Fund Manager</h1>
+      <p>Manage penalties, contributions and party expenses in one place.</p>
     </div>
     <div class="date-pill"><i data-ic="calendar"></i><span id="headDate"></span></div>
     <svg class="head-art" viewBox="0 0 130 84" aria-hidden="true">
       <ellipse cx="108" cy="30" rx="6" ry="16" fill="#5aa7ff" transform="rotate(-20 108 30)" opacity=".85" />
       <ellipse cx="120" cy="38" rx="5" ry="14" fill="#7cc0ff" transform="rotate(15 120 38)" opacity=".85" />
       <ellipse cx="114" cy="52" rx="4" ry="11" fill="#4f8df0" transform="rotate(35 114 52)" opacity=".8" />
-      <circle cx="62" cy="52" r="30" fill="#4f46e5" stroke="#8e8cf5" stroke-width="3" />
-      <circle cx="62" cy="52" r="23" fill="#fff" />
-      <path d="M62 38v14l9 6" stroke="#4f46e5" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" />
-      <circle cx="42" cy="26" r="7" fill="#6d5ef0" />
-      <circle cx="82" cy="26" r="7" fill="#6d5ef0" />
+      <circle cx="62" cy="52" r="30" fill="#fbbf24" stroke="#fde68a" stroke-width="3" />
+      <circle cx="62" cy="52" r="23" fill="#fcd34d" stroke="#f59e0b" stroke-width="2" />
+      <text x="62" y="62" text-anchor="middle" font-size="28" font-weight="800" fill="#b45309" font-family="system-ui, sans-serif">₹</text>
     </svg>
   </header>
 
@@ -388,10 +431,10 @@
       <div class="stat s-blue">
         <div class="top"><span class="sicon"><i data-ic="users"></i></span><span class="slabel">Total Collected</span></div>
         <div class="sval" id="sCollected">₹0</div>
-        <div class="ssub green"><i data-ic="arrowUp"></i><span id="sPerLate"></span></div>
+        <div class="ssub green"><i data-ic="arrowUp"></i><span id="sCollectedSub"></span></div>
       </div>
       <div class="stat s-green">
-        <div class="top"><span class="sicon"><i data-ic="coins"></i></span><span class="slabel">Total Spent on Parties</span></div>
+        <div class="top"><span class="sicon"><i data-ic="coins"></i></span><span class="slabel">Total Spent</span></div>
         <div class="sval" id="sSpent">₹0</div>
         <div class="ssub" id="sSpentSub">No expenses yet</div>
       </div>
@@ -401,79 +444,117 @@
         <div class="ssub violet"><i data-ic="sparkles"></i>Available for next party</div>
       </div>
       <div class="stat s-orange">
-        <div class="top"><span class="sicon"><i data-ic="star"></i></span><span class="slabel">Total Late Marks</span></div>
-        <div class="sval" id="sLates">0</div>
+        <div class="top"><span class="sicon"><i data-ic="history"></i></span><span class="slabel">Total Transactions</span></div>
+        <div class="sval" id="sTxns">0</div>
         <div class="ssub">Across all employees</div>
       </div>
     </section>
 
     <section class="grid">
-      <div class="card">
+      <div class="card" id="txCard">
         <div class="card-head">
-          <span class="badge blue"><i data-ic="clock"></i></span>
+          <span class="badge blue" id="txBadge"><i data-ic="plus"></i></span>
           <div>
-            <h2>Mark Late</h2>
-            <p>Record an employee who arrived after 9:00 AM</p>
+            <h2>New Transaction</h2>
+            <p>Record a penalty, contribution or expense</p>
           </div>
         </div>
-        <form id="lateForm">
-          <label for="lateEmp" style="margin-top:0">Employee</label>
-          <div class="field"><i data-ic="user"></i><select id="lateEmp" required></select></div>
+        <form id="txForm">
+          <label for="txCat" class="first">Category</label>
+          <div class="field"><i data-ic="tag"></i><select id="txCat" required></select></div>
           <div class="row">
             <div>
-              <label for="lateDate">Date</label>
-              <div class="field"><i data-ic="calendar"></i><input type="date" id="lateDate" required></div>
+              <label for="txEmp" id="txEmpLabel">Employee</label>
+              <div class="field"><i data-ic="user"></i><select id="txEmp" required></select></div>
             </div>
             <div>
-              <label for="lateTime">Arrival time</label>
-              <div class="field"><i data-ic="clock"></i><input type="time" id="lateTime" required></div>
+              <label for="txAmt">Amount (₹)</label>
+              <div class="field"><span class="rupee">₹</span><input type="number" id="txAmt" min="1" step="1" placeholder="Enter amount" required style="padding-left:30px"></div>
             </div>
           </div>
-          <div class="hint"><i data-ic="info"></i>Penalty: ₹120 (fixed). Time must be after 09:00.</div>
-          <button class="btn-main" type="submit"><i data-ic="plus"></i>Add Late Penalty</button>
-        </form>
-      </div>
-
-      <div class="card spend">
-        <div class="card-head">
-          <span class="badge plum"><i data-ic="party"></i></span>
-          <div>
-            <h2>Spend from Fund (Party)</h2>
-            <p>Use the collected fund for parties</p>
-          </div>
-        </div>
-        <form id="spendForm">
+          <div class="left-hint" id="txLeft"></div>
           <div class="row">
             <div>
-              <label for="spendEmp" style="margin-top:0">Spent by</label>
-              <div class="field"><i data-ic="users"></i><select id="spendEmp" required></select></div>
+              <label for="txDate">Date</label>
+              <div class="field"><i data-ic="calendar"></i><input type="date" id="txDate" required></div>
             </div>
-            <div>
-              <label for="spendAmt" style="margin-top:0">Amount (₹)</label>
-              <div class="field"><span class="rupee">₹</span><input type="number" id="spendAmt" min="1" step="1" placeholder="Enter amount" required style="padding-left:30px"></div>
+            <div id="timeWrap" class="hidden">
+              <label for="txTime">Arrival time</label>
+              <div class="field"><i data-ic="clock"></i><input type="time" id="txTime"></div>
             </div>
           </div>
-          <div class="left-hint" id="spendLeft"></div>
-          <div class="row">
-            <div>
-              <label for="spendDate">Date</label>
-              <div class="field"><i data-ic="calendar"></i><input type="date" id="spendDate" required></div>
-            </div>
-            <div></div>
-          </div>
-          <label for="spendNote">Note (optional) – which party?</label>
-          <textarea id="spendNote" maxlength="200" placeholder="e.g. Diwali team lunch"></textarea>
+          <div class="hint hidden" id="txRule"><i data-ic="info"></i><span id="txRuleText"></span></div>
+          <label for="txNote" id="txNoteLabel">Note (optional)</label>
+          <textarea id="txNote" maxlength="200" placeholder="e.g. Wrong answer in product review"></textarea>
           <div class="count" id="noteCount">0/200</div>
-          <button class="btn-main plum" type="submit"><i data-ic="wallet"></i>Deduct from Fund</button>
+          <button class="btn-main" id="txSubmit" type="submit"></button>
         </form>
       </div>
 
       <div class="card">
+        <div class="card-head">
+          <span class="badge teal"><i data-ic="tag"></i></span>
+          <div class="grow">
+            <h2>Categories</h2>
+            <p>Penalties, contributions and expenses</p>
+          </div>
+          <button class="btn-add" id="catAddBtn" type="button"><i data-ic="plus"></i>Add</button>
+        </div>
+
+        <form id="catForm" class="cat-form hidden">
+          <h3 id="catFormTitle">New category</h3>
+          <label for="catName">Name</label>
+          <input type="text" id="catName" maxlength="40" placeholder="e.g. Dress Code Penalty" required>
+          <div class="row">
+            <div>
+              <label for="catKind">Type</label>
+              <select id="catKind">
+                <option value="in">Collection (money in)</option>
+                <option value="out">Expense (money out)</option>
+              </select>
+            </div>
+            <div>
+              <label for="catMode">Amount</label>
+              <select id="catMode">
+                <option value="variable">Variable</option>
+                <option value="fixed">Fixed</option>
+              </select>
+            </div>
+          </div>
+          <div id="catAmtWrap" class="hidden">
+            <label for="catAmount">Fixed amount (₹)</label>
+            <input type="number" id="catAmount" min="1" step="1" placeholder="e.g. 120">
+          </div>
+          <div id="catTimeWrap" class="hidden">
+            <label class="chk"><input type="checkbox" id="catTimeChk">Ask arrival time and require it after</label>
+            <input type="time" id="catTime" value="09:00">
+          </div>
+          <div class="cat-actions">
+            <button class="btn-save" type="submit">Save</button>
+            <button class="btn-ghost" id="catCancel" type="button">Cancel</button>
+          </div>
+        </form>
+
+        <div class="scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Total</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="catBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card span-all">
         <div class="card-head wrap">
           <span class="badge lavender"><i data-ic="users"></i></span>
           <div class="grow">
             <h2>Employees</h2>
-            <p>Manage employee late marks</p>
+            <p>Balance and statement per employee</p>
           </div>
           <form id="empForm" class="emp-add">
             <div class="field"><i data-ic="search"></i><input type="text" id="empName" placeholder="New employee name" maxlength="60" required></div>
@@ -485,8 +566,9 @@
             <thead>
               <tr>
                 <th>Name</th>
-                <th>Lates</th>
-                <th>Owed</th>
+                <th>Paid</th>
+                <th>Spent</th>
+                <th>Left</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -496,29 +578,26 @@
       </div>
     </section>
 
-    <section class="card">
+    <section class="card" id="historyCard">
       <div class="card-head wrap">
         <span class="badge violet"><i data-ic="history"></i></span>
         <div class="grow">
           <h2>History</h2>
-          <p>All late entries and penalties</p>
+          <p>All transactions with their records</p>
         </div>
         <div class="toolbar">
-          <select id="filterType">
-            <option value="all">All</option>
-            <option value="late">Late penalties</option>
-            <option value="spent">Party spends</option>
-          </select>
+          <select id="filterCat"></select>
           <select id="filterEmp"></select>
           <button class="btn-soft" id="exportBtn" type="button"><i data-ic="download"></i>Export CSV</button>
         </div>
       </div>
+      <div class="chips hidden" id="empSummary"></div>
       <div class="scroll">
         <table>
           <thead>
             <tr>
               <th>Date</th>
-              <th>Type</th>
+              <th>Category</th>
               <th>Employee</th>
               <th>Details</th>
               <th>Amount</th>
@@ -535,9 +614,13 @@
 
   <script>
     (function () {
-      var PENALTY = 120;
-      var KEY = 'latePenaltyData.v1';
-      var state = load();
+      var KEY = 'teamFundData.v2';
+      var OLD_KEY = 'latePenaltyData.v1';
+
+      var PALETTE = [
+        ['#fde9ee', '#e11d48'], ['#fff1de', '#c2410c'], ['#e0f2fe', '#0369a1'], ['#dcfce7', '#15803d'],
+        ['#fef9c3', '#a16207'], ['#efe7fd', '#7c3aed'], ['#ccfbf1', '#0f766e'], ['#fae8ff', '#a21caf']
+      ];
 
       var ICONS = {
         clock: '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
@@ -545,7 +628,6 @@
         user: '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
         coins: '<circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/>',
         wallet: '<path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/>',
-        star: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
         calendar: '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
         info: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
         plus: '<path d="M5 12h14"/><path d="M12 5v14"/>',
@@ -555,19 +637,53 @@
         arrowUp: '<path d="m5 12 7-7 7 7"/><path d="M12 19V5"/>',
         sparkles: '<path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/>',
         search: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
-        party: '<path d="M5.8 11.3 2 22l10.7-3.79"/><path d="M4 3h.01"/><path d="M22 8h.01"/><path d="M15 2h.01"/><path d="M22 20h.01"/><path d="m22 2-2.24.75a2.9 2.9 0 0 0-1.96 3.12c.1.86-.57 1.63-1.45 1.63h-.38c-.86 0-1.6.6-1.76 1.44L14 10"/><path d="m22 13-.82-.33c-.86-.34-1.82.2-1.98 1.11-.11.7-.72 1.22-1.43 1.22H17"/><path d="m11 2 .33.82c.34.86-.2 1.82-1.11 1.98C9.52 4.9 9 5.52 9 6.23V7"/><path d="M11 13c1.93 1.93 2.83 4.17 2 5-.83.83-3.07-.07-5-2-1.93-1.93-2.83-4.17-2-5 .83-.83 3.07.07 5 2Z"/>'
+        party: '<path d="M5.8 11.3 2 22l10.7-3.79"/><path d="M4 3h.01"/><path d="M22 8h.01"/><path d="M15 2h.01"/><path d="M22 20h.01"/><path d="m22 2-2.24.75a2.9 2.9 0 0 0-1.96 3.12c.1.86-.57 1.63-1.45 1.63h-.38c-.86 0-1.6.6-1.76 1.44L14 10"/><path d="m22 13-.82-.33c-.86-.34-1.82.2-1.98 1.11-.11.7-.72 1.22-1.43 1.22H17"/><path d="m11 2 .33.82c.34.86-.2 1.82-1.11 1.98C9.52 4.9 9 5.52 9 6.23V7"/><path d="M11 13c1.93 1.93 2.83 4.17 2 5-.83.83-3.07-.07-5-2-1.93-1.93-2.83-4.17-2-5 .83-.83 3.07.07 5 2Z"/>',
+        tag: '<path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/>',
+        edit: '<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
+        fileText: '<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>'
       };
       function ic(name) {
         return '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">' + ICONS[name] + '</svg>';
       }
 
+      function defaultCategories() {
+        return [
+          { id: 'cat_late', name: 'Late Penalty', kind: 'in', fixed: true, amount: 120, afterTime: '09:00', color: 0 },
+          { id: 'cat_meeting', name: 'Meeting Penalty', kind: 'in', fixed: false, amount: 0, afterTime: '', color: 1 },
+          { id: 'cat_appraisal', name: 'Appraisal Contribution', kind: 'in', fixed: false, amount: 0, afterTime: '', color: 2 },
+          { id: 'cat_party_in', name: 'Party Contribution', kind: 'in', fixed: false, amount: 0, afterTime: '', color: 3 },
+          { id: 'cat_other', name: 'Other Penalty', kind: 'in', fixed: false, amount: 0, afterTime: '', color: 4 },
+          { id: 'cat_party', name: 'Party Expense', kind: 'out', fixed: false, amount: 0, afterTime: '', color: 5 }
+        ];
+      }
+
       function load() {
         try {
           var d = JSON.parse(localStorage.getItem(KEY));
-          if (d && Array.isArray(d.employees) && Array.isArray(d.entries)) return d;
+          if (d && Array.isArray(d.employees) && Array.isArray(d.entries) && Array.isArray(d.categories)) return d;
         } catch (e) { }
-        return { employees: [], entries: [] };
+        var fresh = { employees: [], categories: defaultCategories(), entries: [] };
+        try {
+          var old = JSON.parse(localStorage.getItem(OLD_KEY));
+          if (old && Array.isArray(old.employees) && Array.isArray(old.entries)) {
+            fresh.employees = old.employees;
+            fresh.entries = old.entries.map(function (e) {
+              var isLate = e.type === 'late';
+              return {
+                id: e.id, catId: isLate ? 'cat_late' : 'cat_party', kind: isLate ? 'in' : 'out',
+                empId: e.empId, date: e.date, time: e.time || '', amount: e.amount,
+                note: e.note || '', created: e.created || 0
+              };
+            });
+            localStorage.setItem(KEY, JSON.stringify(fresh));
+          }
+        } catch (e) { }
+        return fresh;
       }
+
+      var state = load();
+      var editingCat = null;
+
       function save() { localStorage.setItem(KEY, JSON.stringify(state)); }
       function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
       function $(id) { return document.getElementById(id); }
@@ -577,28 +693,28 @@
         d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
         return d.toISOString().slice(0, 10);
       }
-      function empStats(id) {
-        var paid = 0, spent = 0, lates = 0;
-        state.entries.forEach(function (e) {
-          if (e.empId !== id) return;
-          if (e.type === 'late') { paid += e.amount; lates++; } else spent += e.amount;
-        });
-        return { lates: lates, paid: paid, spent: spent, left: paid - spent };
+      function sortedEmps() {
+        return state.employees.slice().sort(function (a, b) { return a.name.localeCompare(b.name); });
       }
-      function renderSpendLeft() {
-        var h = $('spendLeft'), id = $('spendEmp').value;
-        if (!id) { h.textContent = ''; h.className = 'left-hint'; return; }
-        var s = empStats(id);
-        h.textContent = 'Left in ' + empName(id) + "'s account: " + money(s.left) + ' (paid ' + money(s.paid) + ', spent ' + money(s.spent) + ')';
-        h.className = 'left-hint' + (s.left < 0 ? ' neg' : '');
+      function catById(id) {
+        return state.categories.find(function (c) { return c.id === id; });
       }
+      function catName(id) { var c = catById(id); return c ? c.name : 'Unknown'; }
       function empName(id) {
         var e = state.employees.find(function (x) { return x.id === id; });
         return e ? e.name : 'Unknown';
       }
+      function empStats(id) {
+        var paid = 0, spent = 0;
+        state.entries.forEach(function (e) {
+          if (e.empId !== id) return;
+          if (e.kind === 'in') paid += e.amount; else spent += e.amount;
+        });
+        return { paid: paid, spent: spent, left: paid - spent };
+      }
       function toast(msg) {
         var t = $('toast'); t.textContent = msg; t.classList.add('show');
-        clearTimeout(toast.t); toast.t = setTimeout(function () { t.classList.remove('show'); }, 2200);
+        clearTimeout(toast.t); toast.t = setTimeout(function () { t.classList.remove('show'); }, 2400);
       }
       function el(tag, text, cls) {
         var e = document.createElement(tag);
@@ -606,69 +722,200 @@
         if (cls) e.className = cls;
         return e;
       }
-      function fillSelect(sel, withAll) {
+      function setOptions(sel, items, emptyText) {
         var prev = sel.value;
         sel.innerHTML = '';
-        if (withAll) {
-          var o = el('option', 'All employees'); o.value = 'all'; sel.appendChild(o);
-        } else if (!state.employees.length) {
-          var p = el('option', 'Add an employee first'); p.value = ''; sel.appendChild(p);
+        if (!items.length) {
+          var p = el('option', emptyText); p.value = ''; sel.appendChild(p);
+          return;
         }
-        state.employees.slice().sort(function (a, b) { return a.name.localeCompare(b.name); })
-          .forEach(function (e) { var o = el('option', e.name); o.value = e.id; sel.appendChild(o); });
-        if (prev) sel.value = prev;
-        if (!sel.value && sel.options.length) sel.selectedIndex = 0;
+        items.forEach(function (i) { var o = el('option', i.t); o.value = i.v; sel.appendChild(o); });
+        if (prev && items.some(function (i) { return i.v === prev; })) sel.value = prev; else sel.selectedIndex = 0;
+      }
+      function fillCatSelect() {
+        var sel = $('txCat'), prev = sel.value;
+        sel.innerHTML = '';
+        if (!state.categories.length) {
+          var p = el('option', 'Add a category first'); p.value = ''; sel.appendChild(p);
+          return;
+        }
+        [['in', 'Collections (money in)'], ['out', 'Expenses (money out)']].forEach(function (g) {
+          var cats = state.categories.filter(function (c) { return c.kind === g[0]; });
+          if (!cats.length) return;
+          var og = document.createElement('optgroup'); og.label = g[1];
+          cats.forEach(function (c) { var o = el('option', c.name); o.value = c.id; og.appendChild(o); });
+          sel.appendChild(og);
+        });
+        if (prev && catById(prev)) sel.value = prev; else sel.selectedIndex = 0;
+      }
+      function catTag(id) {
+        var c = catById(id);
+        var s = el('span', c ? c.name : 'Unknown', 'tag');
+        var p = PALETTE[(c ? c.color : 0) % PALETTE.length];
+        s.style.background = p[0]; s.style.color = p[1];
+        return s;
+      }
+
+      function ruleText(cat) {
+        var parts = [];
+        if (cat.fixed) parts.push('Fixed amount: ' + money(cat.amount) + '.');
+        if (cat.afterTime) parts.push('Arrival time must be after ' + cat.afterTime + '.');
+        return parts.join(' ');
+      }
+
+      function applyCatUI() {
+        var cat = catById($('txCat').value);
+        var amt = $('txAmt'), submit = $('txSubmit');
+        var out = !!cat && cat.kind === 'out';
+        $('txCard').classList.toggle('out', out);
+        $('txBadge').className = 'badge ' + (out ? 'plum' : 'blue');
+        $('txBadge').innerHTML = ic(out ? 'party' : 'plus');
+        $('txEmpLabel').textContent = out ? 'Paid by' : 'Employee';
+        $('txNoteLabel').textContent = out ? 'Note (optional) – which party / expense?' : 'Note (optional) – reason';
+        submit.className = 'btn-main' + (out ? ' plum' : '');
+        submit.disabled = !cat;
+        if (!cat) {
+          submit.innerHTML = ic('plus') + 'Add a category first';
+          $('timeWrap').classList.add('hidden'); $('txRule').classList.add('hidden');
+          return;
+        }
+        submit.innerHTML = ic(out ? 'wallet' : 'plus') + (out ? 'Deduct from Fund' : 'Add ' + cat.name);
+        if (cat.fixed) { amt.value = cat.amount; amt.readOnly = true; }
+        else { if (amt.readOnly) amt.value = ''; amt.readOnly = false; }
+        $('timeWrap').classList.toggle('hidden', !cat.afterTime);
+        $('txTime').required = !!cat.afterTime;
+        var rt = ruleText(cat);
+        $('txRule').classList.toggle('hidden', !rt);
+        $('txRuleText').textContent = rt;
+        renderLeft();
+      }
+
+      function renderLeft() {
+        var h = $('txLeft'), cat = catById($('txCat').value), id = $('txEmp').value;
+        if (!cat || cat.kind !== 'out' || !id) { h.textContent = ''; h.className = 'left-hint'; return; }
+        var s = empStats(id);
+        h.textContent = 'Left in ' + empName(id) + "'s account: " + money(s.left) + ' (paid ' + money(s.paid) + ', spent ' + money(s.spent) + ')';
+        h.className = 'left-hint' + (s.left < 0 ? ' neg' : '');
       }
 
       function render() {
-        var collected = 0, spent = 0, lates = 0, spends = 0;
+        var collected = 0, spent = 0, ins = 0, outs = 0;
         state.entries.forEach(function (e) {
-          if (e.type === 'late') { collected += e.amount; lates++; } else { spent += e.amount; spends++; }
+          if (e.kind === 'in') { collected += e.amount; ins++; } else { spent += e.amount; outs++; }
         });
         var bal = collected - spent;
         $('sCollected').textContent = money(collected);
+        $('sCollectedSub').textContent = ins + (ins === 1 ? ' collection' : ' collections');
         $('sSpent').textContent = money(spent);
-        $('sSpentSub').textContent = spends ? spends + (spends === 1 ? ' expense' : ' expenses') + ' recorded' : 'No expenses yet';
+        $('sSpentSub').textContent = outs ? outs + (outs === 1 ? ' expense' : ' expenses') + ' recorded' : 'No expenses yet';
         $('sBalance').textContent = money(bal);
-        $('sLates').textContent = lates;
+        $('sTxns').textContent = state.entries.length;
         $('balBox').classList.toggle('neg', bal < 0);
 
-        fillSelect($('lateEmp')); fillSelect($('spendEmp')); fillSelect($('filterEmp'), true);
+        fillCatSelect();
+        var empItems = sortedEmps().map(function (e) { return { v: e.id, t: e.name }; });
+        setOptions($('txEmp'), empItems, 'Add an employee first');
+        setOptions($('filterEmp'), [{ v: 'all', t: 'All employees' }].concat(empItems));
+        setOptions($('filterCat'), [{ v: 'all', t: 'All categories' }].concat(
+          state.categories.map(function (c) { return { v: c.id, t: c.name }; })));
 
+        renderCats();
+        renderEmps();
+        applyCatUI();
+        renderHistory();
+      }
+
+      function renderCats() {
+        var body = $('catBody'); body.innerHTML = '';
+        if (!state.categories.length) {
+          var tr0 = el('tr'); var td0 = el('td', 'No categories yet', 'empty'); td0.colSpan = 3; tr0.appendChild(td0); body.appendChild(tr0);
+          return;
+        }
+        state.categories.forEach(function (c) {
+          var total = 0, n = 0;
+          state.entries.forEach(function (e) { if (e.catId === c.id) { total += e.amount; n++; } });
+          var tr = el('tr');
+          var nameTd = el('td', undefined, 'name');
+          var dot = el('span', undefined, 'dot'); dot.style.background = PALETTE[c.color % PALETTE.length][1];
+          nameTd.appendChild(dot);
+          nameTd.appendChild(document.createTextNode(c.name));
+          var info = (c.kind === 'in' ? 'Collection' : 'Expense') + ' · ' + (c.fixed ? 'Fixed ' + money(c.amount) : 'Variable') + (c.afterTime ? ' · after ' + c.afterTime : '');
+          nameTd.appendChild(el('span', info, 'sub'));
+          tr.appendChild(nameTd);
+          var totTd = el('td', (c.kind === 'in' ? '+ ' : '− ') + money(total), 'nowrap ' + (c.kind === 'in' ? 'pos' : 'neg'));
+          totTd.appendChild(el('span', n + (n === 1 ? ' txn' : ' txns'), 'sub'));
+          tr.appendChild(totTd);
+          var act = el('td', undefined, 'nowrap');
+          var eb = el('button', undefined, 'btn-icon'); eb.title = 'Edit'; eb.innerHTML = ic('edit');
+          eb.onclick = function () { openCatForm(c.id); };
+          var db = el('button', undefined, 'btn-icon danger'); db.title = 'Delete'; db.innerHTML = ic('trash');
+          db.onclick = function () { deleteCategory(c.id); };
+          act.appendChild(eb); act.appendChild(db); tr.appendChild(act);
+          body.appendChild(tr);
+        });
+      }
+
+      function renderEmps() {
         var body = $('empBody'); body.innerHTML = '';
         if (!state.employees.length) {
-          var tr = el('tr'); var td = el('td', 'No employees yet', 'empty'); td.colSpan = 4; tr.appendChild(td); body.appendChild(tr);
+          var tr0 = el('tr'); var td0 = el('td', 'No employees yet', 'empty'); td0.colSpan = 5; tr0.appendChild(td0); body.appendChild(tr0);
+          return;
         }
-        state.employees.slice().sort(function (a, b) { return a.name.localeCompare(b.name); }).forEach(function (e) {
+        sortedEmps().forEach(function (e) {
           var s = empStats(e.id);
           var tr = el('tr');
           var nameTd = el('td', undefined, 'name');
           nameTd.appendChild(el('span', e.name.charAt(0).toUpperCase(), 'avatar'));
           nameTd.appendChild(document.createTextNode(e.name));
           tr.appendChild(nameTd);
-          tr.appendChild(el('td', s.lates));
-          tr.appendChild(el('td', money(s.paid)));
-          var act = el('td'); var b = el('button', undefined, 'btn-del');
-          b.innerHTML = ic('trash') + 'Remove';
-          b.onclick = function () { removeEmployee(e.id); };
-          act.appendChild(b); tr.appendChild(act); body.appendChild(tr);
+          tr.appendChild(el('td', money(s.paid), 'nowrap'));
+          tr.appendChild(el('td', money(s.spent), 'nowrap'));
+          tr.appendChild(el('td', money(s.left), 'nowrap ' + (s.left < 0 ? 'neg' : 'pos')));
+          var act = el('td', undefined, 'nowrap');
+          var sb = el('button', undefined, 'btn-icon'); sb.title = 'View statement'; sb.innerHTML = ic('fileText');
+          sb.onclick = function () {
+            $('filterEmp').value = e.id; $('filterCat').value = 'all'; renderHistory();
+            $('historyCard').scrollIntoView({ behavior: 'smooth' });
+          };
+          var rb = el('button', undefined, 'btn-icon danger'); rb.title = 'Remove'; rb.innerHTML = ic('trash');
+          rb.onclick = function () { removeEmployee(e.id); };
+          act.appendChild(sb); act.appendChild(rb); tr.appendChild(act);
+          body.appendChild(tr);
         });
-
-        renderSpendLeft();
-        renderHistory();
       }
 
       function renderHistory() {
-        var type = $('filterType').value, emp = $('filterEmp').value || 'all';
+        var catF = $('filterCat').value || 'all', emp = $('filterEmp').value || 'all';
+
+        var chips = $('empSummary'); chips.innerHTML = '';
+        if (emp !== 'all') {
+          var net = 0;
+          state.categories.forEach(function (c) {
+            var t = 0, n = 0;
+            state.entries.forEach(function (e) { if (e.empId === emp && e.catId === c.id) { t += e.amount; n++; } });
+            if (!n) return;
+            net += c.kind === 'in' ? t : -t;
+            var chip = el('span', c.name + ':', 'chip ' + c.kind);
+            chip.appendChild(el('b', (c.kind === 'in' ? '+ ' : '− ') + money(t)));
+            chips.appendChild(chip);
+          });
+          var nc = el('span', empName(emp) + ' balance:', 'chip net');
+          nc.appendChild(el('b', money(net)));
+          chips.appendChild(nc);
+          chips.classList.remove('hidden');
+        } else {
+          chips.classList.add('hidden');
+        }
+
         var list = state.entries.filter(function (e) {
-          return (type === 'all' || e.type === type) && (emp === 'all' || e.empId === emp);
+          return (catF === 'all' || e.catId === catF) && (emp === 'all' || e.empId === emp);
         }).sort(function (a, b) { return (b.date + (b.time || '')).localeCompare(a.date + (a.time || '')) || b.created - a.created; });
         var body = $('histBody'); body.innerHTML = '';
         var foot = $('histFoot'); foot.innerHTML = '';
         var paid = 0, spent = 0;
-        list.forEach(function (e) { if (e.type === 'late') paid += e.amount; else spent += e.amount; });
+        list.forEach(function (e) { if (e.kind === 'in') paid += e.amount; else spent += e.amount; });
         if (list.length) {
-          [['Total Paid', paid, ''], ['Total Spent', spent, ''], ['Left', paid - spent, paid - spent < 0 ? 'neg' : '']].forEach(function (r) {
+          [['Total Collected', paid, ''], ['Total Spent', spent, ''], ['Balance', paid - spent, paid - spent < 0 ? 'neg' : '']].forEach(function (r) {
             var ft = el('tr');
             var lbl = el('td', r[0], 'lbl'); lbl.colSpan = 4;
             ft.appendChild(lbl);
@@ -683,11 +930,12 @@
         }
         list.forEach(function (e) {
           var tr = el('tr');
-          tr.appendChild(el('td', e.date));
-          var t = el('td'); t.appendChild(el('span', e.type === 'late' ? 'Late' : 'Party', 'tag ' + (e.type === 'late' ? 'late' : 'spent'))); tr.appendChild(t);
+          tr.appendChild(el('td', e.date, 'nowrap'));
+          var t = el('td'); t.appendChild(catTag(e.catId)); tr.appendChild(t);
           tr.appendChild(el('td', empName(e.empId), 'name'));
-          tr.appendChild(el('td', e.type === 'late' ? 'Arrived ' + e.time : (e.note || '—')));
-          tr.appendChild(el('td', (e.type === 'late' ? '+ ' : '− ') + money(e.amount), e.type === 'late' ? 'pos' : 'neg'));
+          var details = [e.time ? 'Arrived ' + e.time : '', e.note || ''].filter(Boolean).join(' · ');
+          tr.appendChild(el('td', details || '—'));
+          tr.appendChild(el('td', (e.kind === 'in' ? '+ ' : '− ') + money(e.amount), 'nowrap ' + (e.kind === 'in' ? 'pos' : 'neg')));
           var a = el('td'); var b = el('button', undefined, 'btn-del');
           b.innerHTML = ic('trash') + 'Delete';
           b.onclick = function () {
@@ -709,6 +957,80 @@
         save(); render();
       }
 
+      /* Category management */
+      function syncCatForm() {
+        var kind = $('catKind').value, fixed = $('catMode').value === 'fixed';
+        $('catAmtWrap').classList.toggle('hidden', !fixed);
+        $('catAmount').required = fixed;
+        $('catTimeWrap').classList.toggle('hidden', kind !== 'in');
+        $('catTime').classList.toggle('hidden', !$('catTimeChk').checked);
+      }
+
+      function openCatForm(id) {
+        var c = id ? catById(id) : null;
+        editingCat = id || 'new';
+        $('catFormTitle').textContent = c ? 'Edit category' : 'New category';
+        $('catName').value = c ? c.name : '';
+        $('catKind').value = c ? c.kind : 'in';
+        $('catKind').disabled = !!c;
+        $('catMode').value = c && c.fixed ? 'fixed' : 'variable';
+        $('catAmount').value = c && c.fixed ? c.amount : '';
+        $('catTimeChk').checked = !!(c && c.afterTime);
+        $('catTime').value = c && c.afterTime ? c.afterTime : '09:00';
+        syncCatForm();
+        $('catForm').classList.remove('hidden');
+        $('catName').focus();
+      }
+
+      function closeCatForm() {
+        editingCat = null;
+        $('catForm').classList.add('hidden');
+      }
+
+      function deleteCategory(id) {
+        var n = state.entries.filter(function (e) { return e.catId === id; }).length;
+        if (n) { toast(n + ' transaction(s) use this category. Delete them first.'); return; }
+        if (!confirm('Delete category "' + catName(id) + '"?')) return;
+        state.categories = state.categories.filter(function (c) { return c.id !== id; });
+        if (editingCat === id) closeCatForm();
+        save(); render();
+      }
+
+      $('catAddBtn').onclick = function () { openCatForm(null); };
+      $('catCancel').onclick = closeCatForm;
+      $('catKind').onchange = syncCatForm;
+      $('catMode').onchange = syncCatForm;
+      $('catTimeChk').onchange = syncCatForm;
+
+      $('catForm').onsubmit = function (ev) {
+        ev.preventDefault();
+        var name = $('catName').value.trim();
+        if (!name) return;
+        var self = editingCat === 'new' ? null : editingCat;
+        if (state.categories.some(function (c) { return c.id !== self && c.name.toLowerCase() === name.toLowerCase(); })) {
+          toast('A category with this name already exists'); return;
+        }
+        var kind = $('catKind').value;
+        var fixed = $('catMode').value === 'fixed';
+        var amount = fixed ? Math.round(Number($('catAmount').value)) : 0;
+        if (fixed && !(amount > 0)) { toast('Enter a valid fixed amount'); return; }
+        var afterTime = kind === 'in' && $('catTimeChk').checked ? $('catTime').value : '';
+        if (kind === 'in' && $('catTimeChk').checked && !afterTime) { toast('Choose the cut-off time'); return; }
+
+        if (self) {
+          var c = catById(self);
+          c.name = name; c.fixed = fixed; c.amount = amount; c.afterTime = afterTime;
+        } else {
+          var id = uid();
+          state.categories.push({ id: id, name: name, kind: kind, fixed: fixed, amount: amount, afterTime: afterTime, color: state.categories.length % PALETTE.length });
+          $('txCat').dataset.pick = id;
+        }
+        save(); closeCatForm(); render();
+        if ($('txCat').dataset.pick) { $('txCat').value = $('txCat').dataset.pick; delete $('txCat').dataset.pick; applyCatUI(); }
+        toast('Category saved');
+      };
+
+      /* Employees */
       $('empForm').onsubmit = function (ev) {
         ev.preventDefault();
         var name = $('empName').value.trim();
@@ -720,54 +1042,62 @@
         save(); $('empName').value = ''; render(); toast('Employee added');
       };
 
-      $('lateForm').onsubmit = function (ev) {
+      /* Transactions */
+      $('txForm').onsubmit = function (ev) {
         ev.preventDefault();
-        var emp = $('lateEmp').value, date = $('lateDate').value, time = $('lateTime').value;
+        var cat = catById($('txCat').value);
+        var emp = $('txEmp').value, date = $('txDate').value, time = $('txTime').value;
+        if (!cat) { toast('Add a category first'); return; }
         if (!emp) { toast('Add an employee first'); return; }
-        if (time <= '09:00') { toast('Arrival time must be after 09:00'); return; }
-        var dup = state.entries.some(function (e) { return e.type === 'late' && e.empId === emp && e.date === date; });
-        if (dup && !confirm('This employee is already marked late on this date. Add again?')) return;
-        state.entries.push({ id: uid(), type: 'late', empId: emp, date: date, time: time, amount: PENALTY, created: Date.now() });
-        save(); $('lateTime').value = ''; render(); toast('Late penalty of ' + money(PENALTY) + ' added');
-      };
-
-      $('spendForm').onsubmit = function (ev) {
-        ev.preventDefault();
-        var emp = $('spendEmp').value, amt = Math.round(Number($('spendAmt').value));
-        if (!emp) { toast('Add an employee first'); return; }
+        var amt = cat.fixed ? cat.amount : Math.round(Number($('txAmt').value));
         if (!(amt > 0)) { toast('Enter a valid amount'); return; }
-        var left = empStats(emp).left;
-        if (amt > left && !confirm('Amount exceeds ' + empName(emp) + "'s remaining balance (" + money(left) + '). Continue?')) return;
-        state.entries.push({ id: uid(), type: 'spent', empId: emp, date: $('spendDate').value, amount: amt, note: $('spendNote').value.trim(), created: Date.now() });
-        save(); $('spendAmt').value = ''; $('spendNote').value = ''; $('noteCount').textContent = '0/200'; render(); toast(money(amt) + ' deducted from fund');
+        if (cat.afterTime) {
+          if (!time) { toast('Enter the arrival time'); return; }
+          if (time <= cat.afterTime) { toast('Arrival time must be after ' + cat.afterTime); return; }
+          var dup = state.entries.some(function (e) { return e.catId === cat.id && e.empId === emp && e.date === date; });
+          if (dup && !confirm('This employee already has a "' + cat.name + '" on this date. Add again?')) return;
+        } else {
+          time = '';
+        }
+        if (cat.kind === 'out') {
+          var left = empStats(emp).left;
+          if (amt > left && !confirm('Amount exceeds ' + empName(emp) + "'s remaining balance (" + money(left) + '). Continue?')) return;
+        }
+        state.entries.push({
+          id: uid(), catId: cat.id, kind: cat.kind, empId: emp, date: date, time: time,
+          amount: amt, note: $('txNote').value.trim(), created: Date.now()
+        });
+        save();
+        $('txTime').value = ''; $('txNote').value = ''; $('noteCount').textContent = '0/200';
+        if (!cat.fixed) $('txAmt').value = '';
+        render();
+        toast((cat.kind === 'in' ? money(amt) + ' added to ' : money(amt) + ' deducted from ') + (cat.kind === 'in' ? cat.name : 'fund'));
       };
 
-      $('spendEmp').onchange = renderSpendLeft;
-      $('spendNote').oninput = function () { $('noteCount').textContent = this.value.length + '/200'; };
-      $('filterType').onchange = renderHistory;
+      $('txCat').onchange = applyCatUI;
+      $('txEmp').onchange = renderLeft;
+      $('txNote').oninput = function () { $('noteCount').textContent = this.value.length + '/200'; };
+      $('filterCat').onchange = renderHistory;
       $('filterEmp').onchange = renderHistory;
 
       $('exportBtn').onclick = function () {
         function q(v) { return '"' + String(v).replace(/"/g, '""') + '"'; }
-        var rows = [['Date', 'Type', 'Employee', 'Arrival Time', 'Note', 'Amount']];
+        var rows = [['Date', 'Category', 'Type', 'Employee', 'Arrival Time', 'Note', 'Amount']];
         state.entries.slice().sort(function (a, b) { return a.date.localeCompare(b.date) || a.created - b.created; }).forEach(function (e) {
-          rows.push([e.date, e.type === 'late' ? 'Late penalty' : 'Party spend', empName(e.empId), e.time || '', e.note || '', (e.type === 'late' ? '' : '-') + e.amount]);
+          rows.push([e.date, catName(e.catId), e.kind === 'in' ? 'Collection' : 'Expense', empName(e.empId), e.time || '', e.note || '', (e.kind === 'in' ? '' : '-') + e.amount]);
         });
         var csv = rows.map(function (r) { return r.map(q).join(','); }).join('\n');
         var a = document.createElement('a');
         a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-        a.download = 'late-fund-' + today() + '.csv';
+        a.download = 'team-fund-' + today() + '.csv';
         a.click();
       };
 
       Array.prototype.forEach.call(document.querySelectorAll('i[data-ic]'), function (n) {
         n.innerHTML = ic(n.getAttribute('data-ic'));
       });
-      $('penaltyLabel').textContent = money(PENALTY);
-      $('sPerLate').textContent = money(PENALTY) + ' per late';
       $('headDate').textContent = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-      $('lateDate').value = today();
-      $('spendDate').value = today();
+      $('txDate').value = today();
       render();
     })();
   </script>
